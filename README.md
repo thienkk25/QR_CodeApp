@@ -1,3 +1,3 @@
-# qr_code_app
+# QR_CodeApp
 
-A new Flutter project.
+A QR code app.
