@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ScanQrScreen extends StatefulWidget {
@@ -12,19 +13,62 @@ class ScanQrScreen extends StatefulWidget {
 
 class _ScanQrScreenState extends State<ScanQrScreen> {
   final MobileScannerController controller = MobileScannerController();
-  bool _isScanned = false;
+  bool isScanned = false;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkScriptForWeb(context);
+    });
     super.initState();
-    _checkScriptForWeb();
   }
 
-  void _checkScriptForWeb() {
+  void checkScriptForWeb(BuildContext content) {
     if (kIsWeb) {
       final scriptUrl = 'https://unpkg.com/@zxing/library@latest';
       MobileScannerPlatform.instance.setBarcodeLibraryScriptUrl(scriptUrl);
+    } else {
+      requestCameraPermissionAndroidIOS(content);
     }
+  }
+
+  Future<void> requestCameraPermissionAndroidIOS(BuildContext content) async {
+    final status = await Permission.camera.status;
+    if (status.isGranted || status.isLimited || status.isRestricted) {
+      return;
+    }
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+      return;
+    }
+    if (status.isRestricted) {
+      if (!content.mounted) return;
+      showDialog(
+        context: content,
+        builder: (context) => AlertDialog(
+          title: const Text("Không thể truy cập camera"),
+          content: const Text(
+            "Quyền camera đã bị hệ thống hạn chế kiểm soát cha mẹ hoặc thiết bị không cho phép.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Đóng"),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    await Permission.camera
+        .onGrantedCallback(() {})
+        .onDeniedCallback(() {})
+        .onPermanentlyDeniedCallback(() {
+          openAppSettings();
+        })
+        .onRestrictedCallback(() {})
+        .onLimitedCallback(() {})
+        .request();
   }
 
   @override
@@ -44,7 +88,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
           child: MobileScanner(
             controller: controller,
             onDetect: (capture) async {
-              if (_isScanned) return;
+              if (isScanned) return;
               final barcode = capture.barcodes.firstOrNull;
               final value = barcode?.rawValue;
 
@@ -54,7 +98,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                     uri != null &&
                     (uri.hasScheme &&
                         (uri.scheme == 'http' || uri.scheme == 'https'));
-                setState(() => _isScanned = true);
+                setState(() => isScanned = true);
 
                 controller.stop();
 
@@ -82,7 +126,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                           controller.start();
-                          setState(() => _isScanned = false);
+                          setState(() => isScanned = false);
                         },
                         child: const Text('Quét lại'),
                       ),
@@ -90,14 +134,6 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                   ),
                 );
               }
-            },
-            errorBuilder: (context, error) {
-              return Center(
-                child: AlertDialog(
-                  title: const Text('Lỗi'),
-                  content: Text("Vui lòng cấp quyền camera để sử dụng!"),
-                ),
-              );
             },
           ),
         ),
