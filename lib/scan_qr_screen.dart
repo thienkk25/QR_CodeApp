@@ -1,9 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_app/history_scanner_screen.dart';
+import 'package:qr_code_app/scan_history_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ScanQrScreen extends StatefulWidget {
@@ -13,24 +17,37 @@ class ScanQrScreen extends StatefulWidget {
   State<ScanQrScreen> createState() => _ScanQrScreenState();
 }
 
-class _ScanQrScreenState extends State<ScanQrScreen> {
-  final MobileScannerController controller = MobileScannerController();
+class _ScanQrScreenState extends State<ScanQrScreen>
+    with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
+    autoZoom: true,
+  );
+  bool isFlashOn = false;
   bool isScanned = false;
+  bool isAutoOpenLink = false;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      startSharedPreferences();
       checkScriptForWeb(context);
     });
     super.initState();
   }
 
-  void checkScriptForWeb(BuildContext context) {
+  Future<void> startSharedPreferences() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool? getAutoOpenLink = prefs.getBool('isAutoOpenLink');
+    isAutoOpenLink = getAutoOpenLink ?? false;
+  }
+
+  Future<void> checkScriptForWeb(BuildContext context) async {
     if (kIsWeb) {
       final scriptUrl = 'https://unpkg.com/@zxing/library@latest';
       MobileScannerPlatform.instance.setBarcodeLibraryScriptUrl(scriptUrl);
     } else {
-      requestCameraPhotoPermissionAndroidIOS(context);
+      await requestCameraPhotoPermissionAndroidIOS(context);
     }
   }
 
@@ -78,10 +95,9 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
       return;
     }
 
-    await Future.wait([
-      withCallbacks(Permission.camera).request(),
-      withCallbacks(Permission.photos).request(),
-    ]);
+    await withCallbacks(Permission.camera).request();
+    await withCallbacks(Permission.photos).request();
+    await withCallbacks(Permission.storage).request();
   }
 
   Permission withCallbacks(Permission permission) {
@@ -96,7 +112,17 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && isScanned) {
+      controller.start();
+      setState(() => isScanned = false);
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     controller.dispose();
     super.dispose();
   }
@@ -109,87 +135,89 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.photo),
-            onPressed: () async {
-              controller.stop();
-              final ImagePicker picker = ImagePicker();
-              final XFile? image = await picker.pickImage(
-                source: ImageSource.gallery,
-              );
-              if (image != null) {
-                final MobileScannerController controllerPhoto =
-                    MobileScannerController();
-                final BarcodeCapture? capture = await controllerPhoto
-                    .analyzeImage(image.path);
-                final barcode = capture?.barcodes.firstOrNull;
-                final value = barcode?.rawValue;
-                if (value != null) {
-                  final uri = Uri.tryParse(value);
-                  final isUrl =
-                      uri != null &&
-                      (uri.hasScheme &&
-                          (uri.scheme == 'http' || uri.scheme == 'https'));
-                  if (!context.mounted) return;
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text('Đã quét mã'),
-                      content: Text(value),
-                      actions: [
-                        if (isUrl)
-                          TextButton(
-                            onPressed: () async {
-                              final url = Uri.parse(value);
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(
-                                  url,
-                                  mode: LaunchMode.externalApplication,
-                                );
-                              }
-                            },
-                            child: const Text('Mở liên kết'),
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              showGeneralDialog(
+                context: context,
+                barrierDismissible: true,
+                barrierLabel: "Cài đặt",
+                pageBuilder: (context, animation, secondaryAnimation) {
+                  return SafeArea(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Material(
+                        child: Container(
+                          height: double.infinity,
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          color: Colors.white,
+                          child: Column(
+                            children: [
+                              AppBar(
+                                title: Text("Cài đặt"),
+                                automaticallyImplyLeading: false,
+                                centerTitle: true,
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.history),
+                                title: Text("Lịch sử quét"),
+                                onTap: () {
+                                  controller.stop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          HistoryScannerScreen(),
+                                    ),
+                                  ).then((_) => controller.start());
+                                },
+                              ),
+                              StatefulBuilder(
+                                builder: (context, setStateBuilder) {
+                                  return ListTile(
+                                    leading: Icon(Icons.link),
+                                    title: Text("Tự động mở liên kết"),
+                                    trailing: Switch(
+                                      value: isAutoOpenLink,
+                                      onChanged: (value) async {
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        await prefs.setBool(
+                                          'isAutoOpenLink',
+                                          value,
+                                        );
+                                        setStateBuilder(() {
+                                          isAutoOpenLink = value;
+                                        });
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(Icons.help_outline),
+                                title: Text("Hướng dẫn"),
+                                onTap: () {},
+                              ),
+                            ],
                           ),
-                        TextButton(
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: value));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Sao chép thành công")),
-                            );
-                          },
-                          child: const Text('Sao chép'),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Đóng'),
-                        ),
-                      ],
+                      ),
                     ),
                   );
-                } else {
-                  if (!context.mounted) return;
-                  showDialog(
-                    barrierDismissible: false,
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text('Ảnh không đúng định dạng'),
-                      content: Text("Vui lòng thử lại"),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Đóng'),
-                        ),
-                      ],
-                    ),
+                },
+                transitionBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  final tween = Tween<Offset>(
+                    begin: Offset(1, 0),
+                    end: Offset.zero,
                   );
-                }
-                await controllerPhoto.dispose();
-              }
-              controller.start();
+                  return SlideTransition(
+                    position: tween.animate(animation),
+                    child: child,
+                  );
+                },
+                transitionDuration: Duration(milliseconds: 300),
+              );
             },
           ),
         ],
@@ -203,55 +231,18 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
           if (value != null) {
             final uri = Uri.tryParse(value);
-            final isUrl =
-                uri != null &&
+            final isUrl = uri != null &&
                 (uri.hasScheme &&
                     (uri.scheme == 'http' || uri.scheme == 'https'));
             setState(() => isScanned = true);
 
-            controller.stop();
-
-            if (!mounted) return;
-            showDialog(
-              barrierDismissible: false,
-              context: context,
-              builder: (_) => AlertDialog(
-                title: const Text('Đã quét mã'),
-                content: Text(value),
-                actions: [
-                  if (isUrl)
-                    TextButton(
-                      onPressed: () async {
-                        final url = Uri.parse(value);
-                        if (await canLaunchUrl(url)) {
-                          await launchUrl(
-                            url,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        }
-                      },
-                      child: const Text('Mở liên kết'),
-                    ),
-                  TextButton(
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: value));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Sao chép thành công")),
-                      );
-                    },
-                    child: const Text('Sao chép'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      controller.start();
-                      setState(() => isScanned = false);
-                    },
-                    child: const Text('Quét lại'),
-                  ),
-                ],
-              ),
-            );
+            if (isUrl && isAutoOpenLink) {
+              controller.stop();
+              autoOpenLink(value);
+            } else {
+              controller.start();
+              manualOpenLink(isUrl, value);
+            }
           }
         },
       ),
@@ -260,21 +251,139 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            StatefulBuilder(
+              builder: (context, setStateBuilder) {
+                return IconButton(
+                  icon: Icon(isFlashOn ? Icons.flash_on : Icons.flash_off),
+                  onPressed: () {
+                    controller.toggleTorch();
+                    setStateBuilder(() => isFlashOn = !isFlashOn);
+                  },
+                );
+              },
+            ),
             IconButton(
-              icon: const Icon(Icons.flash_on),
-              onPressed: () {
-                controller.toggleTorch();
+              icon: const Icon(Icons.photo),
+              onPressed: () async {
+                controller.stop();
+                final ImagePicker picker = ImagePicker();
+                final XFile? image = await picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) {
+                  final MobileScannerController controllerPhoto =
+                      MobileScannerController();
+                  final BarcodeCapture? capture =
+                      await controllerPhoto.analyzeImage(image.path);
+                  final barcode = capture?.barcodes.firstOrNull;
+                  final value = barcode?.rawValue;
+                  if (value != null) {
+                    final uri = Uri.tryParse(value);
+                    final isUrl = uri != null &&
+                        (uri.hasScheme &&
+                            (uri.scheme == 'http' || uri.scheme == 'https'));
+                    setState(() => isScanned = true);
+
+                    if (isUrl && isAutoOpenLink) {
+                      controller.stop();
+                      autoOpenLink(value);
+                    } else {
+                      controller.start();
+                      manualOpenLink(isUrl, value);
+                    }
+                  } else {
+                    if (!context.mounted) return;
+                    showDialog(
+                      barrierDismissible: false,
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Ảnh không đúng định dạng'),
+                        content: Text("Vui lòng thử lại"),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Đóng'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  await controllerPhoto.dispose();
+                }
+                controller.start();
               },
             ),
             IconButton(
               icon: const Icon(Icons.cameraswitch),
               onPressed: () {
-                controller.switchCamera();
+                // controller.switchCamera();
+                controller.stop();
               },
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> autoOpenLink(String value) async {
+    saveHistory(value);
+    final url = Uri.parse(value);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void manualOpenLink(bool isUrl, String value) {
+    saveHistory(value);
+    if (!mounted) return;
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Đã quét mã'),
+        content: Text(value),
+        actions: [
+          if (isUrl)
+            TextButton(
+              onPressed: () async {
+                final url = Uri.parse(value);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: const Text('Mở liên kết'),
+            ),
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: value));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text("Sao chép thành công")));
+            },
+            child: const Text('Sao chép'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() => isScanned = false);
+            },
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void saveHistory(String value) {
+    final box = Hive.box<ScanHistoryModel>('scan_history');
+    final history = ScanHistoryModel(
+      content: value,
+      scannedAt: DateTime.now(),
+    );
+
+    box.add(history);
   }
 }
