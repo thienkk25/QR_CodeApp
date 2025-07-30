@@ -211,6 +211,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                     trailing: Switch(
                                       value: isScanMode,
                                       onChanged: (value) async {
+                                        await controller.stop();
                                         final prefs = await SharedPreferences
                                             .getInstance();
                                         await prefs.setBool(
