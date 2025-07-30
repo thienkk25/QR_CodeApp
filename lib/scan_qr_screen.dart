@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_app/history_scanner_screen.dart';
+import 'package:qr_code_app/mobile_scan_overlay_screen.dart';
 import 'package:qr_code_app/scan_history_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,9 +20,8 @@ class ScanQrScreen extends StatefulWidget {
 
 class _ScanQrScreenState extends State<ScanQrScreen>
     with WidgetsBindingObserver {
-  final MobileScannerController controller = MobileScannerController(
-    autoZoom: true,
-  );
+  final MobileScannerController controller = MobileScannerController();
+  bool isScanMode = false;
   bool isFlashOn = false;
   bool isScanned = false;
   bool isAutoOpenLink = false;
@@ -39,7 +39,9 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   Future<void> startSharedPreferences() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? getAutoOpenLink = prefs.getBool('isAutoOpenLink');
+    final bool? getScanMode = prefs.getBool('isScanMode');
     isAutoOpenLink = getAutoOpenLink ?? false;
+    isScanMode = getScanMode ?? false;
   }
 
   Future<void> checkScriptForWeb(BuildContext context) async {
@@ -56,13 +58,20 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   ) async {
     final cameraStatus = await Permission.camera.status;
     final photoStatus = await Permission.photos.status;
+    final storageStatus = await Permission.storage.status;
 
-    if ((cameraStatus.isGranted || cameraStatus.isLimited) &&
-        (photoStatus.isGranted || photoStatus.isLimited)) {
+    if ((cameraStatus.isGranted ||
+            cameraStatus.isLimited ||
+            storageStatus.isLimited) &&
+        (photoStatus.isGranted ||
+            photoStatus.isLimited ||
+            storageStatus.isGranted)) {
       return;
     }
 
-    if (cameraStatus.isPermanentlyDenied || photoStatus.isPermanentlyDenied) {
+    if (cameraStatus.isPermanentlyDenied ||
+        photoStatus.isPermanentlyDenied ||
+        storageStatus.isPermanentlyDenied) {
       openAppSettings();
       return;
     }
@@ -123,8 +132,8 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    controller.dispose();
     super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -193,6 +202,30 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                   );
                                 },
                               ),
+                              StatefulBuilder(
+                                builder: (context, setStateBuilder) {
+                                  return ListTile(
+                                    leading: Icon(Icons.qr_code),
+                                    title: Text("Bật/Tắt khung QR"),
+                                    trailing: Switch(
+                                      value: isScanMode,
+                                      onChanged: (value) async {
+                                        final prefs = await SharedPreferences
+                                            .getInstance();
+                                        await prefs.setBool(
+                                          'isScanMode',
+                                          value,
+                                        );
+                                        setState(() {
+                                          setStateBuilder(() {
+                                            isScanMode = value;
+                                          });
+                                        });
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                               ListTile(
                                 leading: Icon(Icons.help_outline),
                                 title: Text("Hướng dẫn"),
@@ -222,31 +255,15 @@ class _ScanQrScreenState extends State<ScanQrScreen>
           ),
         ],
       ),
-      body: MobileScanner(
+      body: MobileScanOverlayScreen(
         controller: controller,
-        onDetect: (capture) async {
-          if (isScanned) return;
-          final barcode = capture.barcodes.firstOrNull;
-          final value = barcode?.rawValue;
-
-          if (value != null) {
-            final uri = Uri.tryParse(value);
-            final isUrl = uri != null &&
-                (uri.hasScheme &&
-                    (uri.scheme == 'http' || uri.scheme == 'https'));
-            setState(() => isScanned = true);
-
-            if (isUrl && isAutoOpenLink) {
-              controller.stop();
-              autoOpenLink(value);
-            } else {
-              controller.start();
-              manualOpenLink(isUrl, value);
-            }
-          }
-        },
+        mode: isScanMode,
+        isAutoOpenLink: isAutoOpenLink,
+        autoOpenLink: (value) => autoOpenLink(value),
+        manualOpenLink: (isUrl, value) => manualOpenLink(isUrl, value),
       ),
       bottomNavigationBar: BottomAppBar(
+        height: 56,
         color: Colors.transparent,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,12 +282,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             IconButton(
               icon: const Icon(Icons.photo),
               onPressed: () async {
-                controller.stop();
+                await controller.stop();
                 final ImagePicker picker = ImagePicker();
                 final XFile? image = await picker.pickImage(
                   source: ImageSource.gallery,
                 );
                 if (image != null) {
+                  if (isScanned) return;
                   final MobileScannerController controllerPhoto =
                       MobileScannerController();
                   final BarcodeCapture? capture =
@@ -285,10 +303,8 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                     setState(() => isScanned = true);
 
                     if (isUrl && isAutoOpenLink) {
-                      controller.stop();
-                      autoOpenLink(value);
+                      await autoOpenLink(value);
                     } else {
-                      controller.start();
                       manualOpenLink(isUrl, value);
                     }
                   } else {
@@ -312,14 +328,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                   }
                   await controllerPhoto.dispose();
                 }
-                controller.start();
+                await controller.start();
               },
             ),
             IconButton(
               icon: const Icon(Icons.cameraswitch),
               onPressed: () {
-                // controller.switchCamera();
-                controller.stop();
+                controller.switchCamera();
               },
             ),
           ],
