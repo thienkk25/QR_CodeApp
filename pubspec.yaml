@@ -1,6 +1,6 @@
 name: qr_code_app
 description: "A QR code app."
-version: 0.1.0
+version: 1.0.0
 
 environment:
   sdk: ^3.0.0
