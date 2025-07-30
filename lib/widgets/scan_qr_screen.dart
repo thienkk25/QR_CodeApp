@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_app/widgets/help_client_screen.dart';
 import 'package:qr_code_app/widgets/history_scanner_screen.dart';
 import 'package:qr_code_app/widgets/mobile_scan_overlay_screen.dart';
 import 'package:qr_code_app/models/scan_history_model.dart';
@@ -229,7 +230,15 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                               ListTile(
                                 leading: Icon(Icons.help_outline),
                                 title: Text("Hướng dẫn"),
-                                onTap: () {},
+                                onTap: () {
+                                  controller.stop();
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            HelpClientScreen(),
+                                      )).then((value) => controller.start());
+                                },
                               ),
                             ],
                           ),
