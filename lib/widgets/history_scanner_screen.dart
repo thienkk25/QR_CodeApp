@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:qr_code_app/format_time.dart';
-import 'package:qr_code_app/scan_history_model.dart';
+import 'package:qr_code_app/config/format_time.dart';
+import 'package:qr_code_app/models/scan_history_model.dart';
 
 class HistoryScannerScreen extends StatefulWidget {
   const HistoryScannerScreen({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:qr_code_app/scan_history_model.dart'
+import 'package:qr_code_app/models/scan_history_model.dart'
     show ScanHistoryModel, ScanHistoryModelAdapter;
-import 'package:qr_code_app/scan_qr_screen.dart';
+import 'package:qr_code_app/widgets/scan_qr_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
