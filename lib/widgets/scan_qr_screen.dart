@@ -41,8 +41,11 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? getAutoOpenLink = prefs.getBool('isAutoOpenLink');
     final bool? getScanMode = prefs.getBool('isScanMode');
-    isAutoOpenLink = getAutoOpenLink ?? false;
-    isScanMode = getScanMode ?? false;
+
+    setState(() {
+      isAutoOpenLink = getAutoOpenLink ?? false;
+      isScanMode = getScanMode ?? false;
+    });
   }
 
   Future<void> checkScriptForWeb(BuildContext context) async {
