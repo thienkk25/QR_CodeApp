@@ -198,8 +198,10 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                           'isAutoOpenLink',
                                           value,
                                         );
-                                        setStateBuilder(() {
-                                          isAutoOpenLink = value;
+                                        setState(() {
+                                          setStateBuilder(() {
+                                            isAutoOpenLink = value;
+                                          });
                                         });
                                       },
                                     ),

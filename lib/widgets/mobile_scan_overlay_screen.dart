@@ -41,7 +41,7 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
         widget.manualOpenLink(isUrl, value);
       }
 
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           setState(() => isScanned = false);
         }
