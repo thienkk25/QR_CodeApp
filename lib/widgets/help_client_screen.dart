@@ -17,7 +17,10 @@ class HelpClientScreen extends StatelessWidget {
               leading: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.flash_on),
+                  Icon(
+                    Icons.flash_on,
+                    color: Colors.orange,
+                  ),
                   Text("/"),
                   Icon(Icons.flash_off),
                 ],

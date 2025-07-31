@@ -20,6 +20,26 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: ScanQrScreen());
+    return MaterialApp(
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: Color(0xFF121212),
+          primarySwatch: Colors.deepPurple,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF1F1F1F),
+            foregroundColor: Colors.white,
+            elevation: 1,
+          ),
+          iconTheme: const IconThemeData(color: Colors.white),
+          textTheme: const TextTheme(
+            bodyMedium: TextStyle(color: Colors.white),
+          ),
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: Colors.deepPurple,
+          ),
+        ),
+        themeMode: ThemeMode.light,
+        debugShowCheckedModeBanner: false,
+        home: ScanQrScreen());
   }
 }

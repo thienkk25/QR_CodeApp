@@ -162,7 +162,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                         child: Container(
                           height: double.infinity,
                           width: MediaQuery.of(context).size.width * 0.8,
-                          color: Colors.white,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           child: Column(
                             children: [
                               AppBar(
@@ -286,7 +286,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             StatefulBuilder(
               builder: (context, setStateBuilder) {
                 return IconButton(
-                  icon: Icon(isFlashOn ? Icons.flash_on : Icons.flash_off),
+                  icon: Icon(
+                    isFlashOn ? Icons.flash_on : Icons.flash_off,
+                    color: isFlashOn
+                        ? Colors.orange
+                        : Theme.of(context).appBarTheme.foregroundColor,
+                  ),
                   onPressed: () {
                     controller.toggleTorch();
                     setStateBuilder(() => isFlashOn = !isFlashOn);
