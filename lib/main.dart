@@ -38,7 +38,7 @@ class MainApp extends StatelessWidget {
             backgroundColor: Colors.deepPurple,
           ),
         ),
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,
         home: ScanQrScreen());
   }
