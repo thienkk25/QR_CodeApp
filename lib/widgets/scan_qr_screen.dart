@@ -64,20 +64,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   ) async {
     final cameraStatus = await Permission.camera.status;
     final photoStatus = await Permission.photos.status;
-    final storageStatus = await Permission.storage.status;
 
-    if ((cameraStatus.isGranted ||
-            cameraStatus.isLimited ||
-            storageStatus.isLimited) &&
-        (photoStatus.isGranted ||
-            photoStatus.isLimited ||
-            storageStatus.isGranted)) {
+    if ((cameraStatus.isGranted || cameraStatus.isLimited) &&
+        (photoStatus.isGranted || photoStatus.isLimited)) {
       return;
     }
 
-    if (cameraStatus.isPermanentlyDenied ||
-        photoStatus.isPermanentlyDenied ||
-        storageStatus.isPermanentlyDenied) {
+    if (cameraStatus.isPermanentlyDenied || photoStatus.isPermanentlyDenied) {
       openAppSettings();
       return;
     }
@@ -112,7 +105,6 @@ class _ScanQrScreenState extends State<ScanQrScreen>
 
     await withCallbacks(Permission.camera).request();
     await withCallbacks(Permission.photos).request();
-    await withCallbacks(Permission.storage).request();
   }
 
   Permission withCallbacks(Permission permission) {

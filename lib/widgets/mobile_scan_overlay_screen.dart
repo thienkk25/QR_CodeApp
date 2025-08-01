@@ -143,11 +143,62 @@ class ScanWindowOverlay extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final borderPaint = Paint()
-      ..color = Colors.white
+      ..color = Colors.white.withAlpha(100)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4.0;
 
     canvas.drawRect(scanWindow, borderPaint);
+
+    final cornerPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 8.0
+      ..strokeCap = StrokeCap.round;
+
+    const cornerLength = 30.0;
+    canvas.drawLine(
+      scanWindow.topLeft,
+      scanWindow.topLeft + const Offset(cornerLength, 0),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      scanWindow.topLeft,
+      scanWindow.topLeft + const Offset(0, cornerLength),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      scanWindow.topRight,
+      scanWindow.topRight + const Offset(-cornerLength, 0),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      scanWindow.topRight,
+      scanWindow.topRight + const Offset(0, cornerLength),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      scanWindow.bottomLeft,
+      scanWindow.bottomLeft + const Offset(cornerLength, 0),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      scanWindow.bottomLeft,
+      scanWindow.bottomLeft + const Offset(0, -cornerLength),
+      cornerPaint,
+    );
+
+    canvas.drawLine(
+      scanWindow.bottomRight,
+      scanWindow.bottomRight + const Offset(-cornerLength, 0),
+      cornerPaint,
+    );
+    canvas.drawLine(
+      scanWindow.bottomRight,
+      scanWindow.bottomRight + const Offset(0, -cornerLength),
+      cornerPaint,
+    );
   }
 
   @override
