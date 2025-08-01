@@ -13,3 +13,6 @@ Support Flash(on/off), Gallery, Camera (front, selfie).
 4. Added image picker from gallery.
 5. Added Scan History feature to view previous scanned results.
 6. Added Auto-open link option for scanned URLs.
+
+**Version 1.1.0:**
+Add pinch-to-zoom feature for camera using two fingers and optimize performance.
