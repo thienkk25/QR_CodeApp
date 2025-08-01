@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class MobileScanOverlayScreen extends StatefulWidget {
-  final MobileScannerController controller;
-  final bool mode;
+  final void Function(MobileScannerController controllerChild) toggleMode;
   final bool isAutoOpenLink;
   final Future<void> Function(String) autoOpenLink;
   final void Function(bool isUrl, String value) manualOpenLink;
   const MobileScanOverlayScreen(
       {super.key,
-      required this.controller,
-      required this.mode,
+      required this.toggleMode,
       required this.isAutoOpenLink,
       required this.autoOpenLink,
       required this.manualOpenLink});
@@ -21,7 +19,22 @@ class MobileScanOverlayScreen extends StatefulWidget {
 }
 
 class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
+  MobileScannerController controller = MobileScannerController();
   bool isScanned = false;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      widget.toggleMode(controller);
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleDetect(BarcodeCapture capture) async {
     if (isScanned) return;
@@ -49,14 +62,8 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
     }
   }
 
-  Widget _buildNormalScanner() {
-    return MobileScanner(
-      controller: widget.controller,
-      onDetect: _handleDetect,
-    );
-  }
-
-  Widget _buildOverlayScanner(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
     final padding = mediaQuery.padding;
@@ -85,13 +92,13 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
       fit: StackFit.expand,
       children: [
         MobileScanner(
-          controller: widget.controller,
+          controller: controller,
           scanWindow: scanWindow,
           fit: BoxFit.cover,
           onDetect: _handleDetect,
         ),
         ValueListenableBuilder(
-          valueListenable: widget.controller,
+          valueListenable: controller,
           builder: (context, value, child) {
             if (!value.isInitialized ||
                 !value.isRunning ||
@@ -111,15 +118,6 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
         ),
       ],
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.mode) {
-      return _buildOverlayScanner(context);
-    } else {
-      return _buildNormalScanner();
-    }
   }
 }
 

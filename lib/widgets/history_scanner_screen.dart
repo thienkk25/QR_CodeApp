@@ -61,9 +61,12 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                       child: ListTile(
                         title: Text(items!.content),
                         subtitle: Text(
-                            "Thời gian quét: ${FormatTime().coverTimeFromIso(items.scannedAt.toIso8601String())}"),
+                            "Đã quét: ${FormatTime().coverTimeFromIso(items.scannedAt.toIso8601String())}"),
                         trailing: InkWell(
-                          child: const Icon(Icons.delete),
+                          child: const Icon(
+                            Icons.delete,
+                            size: 35,
+                          ),
                           onTap: () {
                             box.deleteAt(box.length - 1 - index);
                           },

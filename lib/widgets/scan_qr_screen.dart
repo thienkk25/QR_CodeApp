@@ -7,6 +7,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_app/widgets/help_client_screen.dart';
 import 'package:qr_code_app/widgets/history_scanner_screen.dart';
+import 'package:qr_code_app/widgets/mobile_scan_normal_screen.dart';
 import 'package:qr_code_app/widgets/mobile_scan_overlay_screen.dart';
 import 'package:qr_code_app/models/scan_history_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +22,7 @@ class ScanQrScreen extends StatefulWidget {
 
 class _ScanQrScreenState extends State<ScanQrScreen>
     with WidgetsBindingObserver {
-  final MobileScannerController controller = MobileScannerController();
+  late MobileScannerController controller;
   bool isScanMode = false;
   bool isFlashOn = false;
   bool isScanned = false;
@@ -31,12 +32,17 @@ class _ScanQrScreenState extends State<ScanQrScreen>
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       startSharedPreferences();
       checkScriptForWeb(context);
     });
     super.initState();
+  }
+
+  void toggleMode(MobileScannerController controllerChild) {
+    setState(() {
+      controller = controllerChild;
+    });
   }
 
   Future<void> startSharedPreferences() async {
@@ -278,13 +284,23 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 controller.setZoomScale(currentZoom);
               });
             },
-            child: MobileScanOverlayScreen(
-              controller: controller,
-              mode: isScanMode,
-              isAutoOpenLink: isAutoOpenLink,
-              autoOpenLink: (value) => autoOpenLink(value),
-              manualOpenLink: (isUrl, value) => manualOpenLink(isUrl, value),
-            ),
+            child: isScanMode
+                ? MobileScanOverlayScreen(
+                    toggleMode: (controllerChild) =>
+                        toggleMode(controllerChild),
+                    isAutoOpenLink: isAutoOpenLink,
+                    autoOpenLink: (value) => autoOpenLink(value),
+                    manualOpenLink: (isUrl, value) =>
+                        manualOpenLink(isUrl, value),
+                  )
+                : MobileScanNormalScreen(
+                    toggleMode: (controllerChild) =>
+                        toggleMode(controllerChild),
+                    isAutoOpenLink: isAutoOpenLink,
+                    autoOpenLink: (value) => autoOpenLink(value),
+                    manualOpenLink: (isUrl, value) =>
+                        manualOpenLink(isUrl, value),
+                  ),
           );
         },
       ),
