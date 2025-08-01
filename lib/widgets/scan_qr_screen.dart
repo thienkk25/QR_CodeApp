@@ -26,11 +26,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   bool isFlashOn = false;
   bool isScanned = false;
   bool isAutoOpenLink = false;
+  double currentZoom = 0.0;
+  double baseZoom = 1.0;
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       startSharedPreferences();
       checkScriptForWeb(context);
     });
@@ -270,12 +272,29 @@ class _ScanQrScreenState extends State<ScanQrScreen>
           ),
         ],
       ),
-      body: MobileScanOverlayScreen(
-        controller: controller,
-        mode: isScanMode,
-        isAutoOpenLink: isAutoOpenLink,
-        autoOpenLink: (value) => autoOpenLink(value),
-        manualOpenLink: (isUrl, value) => manualOpenLink(isUrl, value),
+      body: StatefulBuilder(
+        builder: (context, setStateBody) {
+          return GestureDetector(
+            onScaleStart: (details) {
+              baseZoom = currentZoom;
+            },
+            onScaleUpdate: (details) {
+              double newZoom = baseZoom * details.scale;
+              newZoom = newZoom.clamp(0.1, 5.0);
+              setStateBody(() {
+                currentZoom = newZoom;
+                controller.setZoomScale(currentZoom);
+              });
+            },
+            child: MobileScanOverlayScreen(
+              controller: controller,
+              mode: isScanMode,
+              isAutoOpenLink: isAutoOpenLink,
+              autoOpenLink: (value) => autoOpenLink(value),
+              manualOpenLink: (isUrl, value) => manualOpenLink(isUrl, value),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: BottomAppBar(
         height: 56,
