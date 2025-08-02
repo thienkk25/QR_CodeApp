@@ -22,14 +22,13 @@ class ScanQrScreen extends StatefulWidget {
 
 class _ScanQrScreenState extends State<ScanQrScreen>
     with WidgetsBindingObserver {
-  late MobileScannerController controller;
-  bool isScanMode = false;
+  MobileScannerController? controller;
+  late bool isScanMode;
   bool isFlashOn = false;
   bool isScanned = false;
   bool isAutoOpenLink = false;
   double currentZoom = 0.0;
   double baseZoom = 1.0;
-
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -39,10 +38,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     super.initState();
   }
 
-  void toggleMode(MobileScannerController controllerChild) {
-    setState(() {
-      controller = controllerChild;
-    });
+  void toggleMode(MobileScannerController controllerChild) async {
+    if (controller != controllerChild) {
+      setState(() {
+        controller = controllerChild;
+      });
+    }
   }
 
   Future<void> startSharedPreferences() async {
@@ -127,7 +128,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed && isScanned) {
-      controller.start();
+      controller?.start();
       setState(() => isScanned = false);
     }
     super.didChangeAppLifecycleState(state);
@@ -137,7 +138,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-    controller.dispose();
+    controller?.dispose();
   }
 
   @override
@@ -174,14 +175,14 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                 leading: Icon(Icons.history),
                                 title: Text("Lịch sử quét"),
                                 onTap: () {
-                                  controller.stop();
+                                  controller?.stop();
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           HistoryScannerScreen(),
                                     ),
-                                  ).then((_) => controller.start());
+                                  ).then((_) => controller?.start());
                                 },
                               ),
                               StatefulBuilder(
@@ -216,7 +217,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                     trailing: Switch(
                                       value: isScanMode,
                                       onChanged: (value) async {
-                                        await controller.stop();
+                                        controller?.stop();
                                         final prefs = await SharedPreferences
                                             .getInstance();
                                         await prefs.setBool(
@@ -237,13 +238,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                                 leading: Icon(Icons.help_outline),
                                 title: Text("Hướng dẫn"),
                                 onTap: () {
-                                  controller.stop();
+                                  controller?.stop();
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             HelpClientScreen(),
-                                      )).then((value) => controller.start());
+                                      )).then((value) => controller?.start());
                                 },
                               ),
                             ],
@@ -281,7 +282,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
               newZoom = newZoom.clamp(0.1, 5.0);
               setStateBody(() {
                 currentZoom = newZoom;
-                controller.setZoomScale(currentZoom);
+                controller?.setZoomScale(currentZoom);
               });
             },
             child: isScanMode
@@ -294,7 +295,9 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                         manualOpenLink(isUrl, value),
                   )
                 : MobileScanNormalScreen(
-                    toggleMode: (controllerChild) =>
+                    toggleMode: (
+                      controllerChild,
+                    ) =>
                         toggleMode(controllerChild),
                     isAutoOpenLink: isAutoOpenLink,
                     autoOpenLink: (value) => autoOpenLink(value),
@@ -320,7 +323,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                         : Theme.of(context).appBarTheme.foregroundColor,
                   ),
                   onPressed: () {
-                    controller.toggleTorch();
+                    controller?.toggleTorch();
                     setStateBuilder(() => isFlashOn = !isFlashOn);
                   },
                 );
@@ -329,7 +332,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             IconButton(
               icon: const Icon(Icons.photo),
               onPressed: () async {
-                await controller.stop();
+                await controller?.stop();
                 final ImagePicker picker = ImagePicker();
                 final XFile? image = await picker.pickImage(
                   source: ImageSource.gallery,
@@ -375,13 +378,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                   }
                   await controllerPhoto.dispose();
                 }
-                await controller.start();
+                await controller?.start();
               },
             ),
             IconButton(
               icon: const Icon(Icons.cameraswitch),
               onPressed: () {
-                controller.switchCamera();
+                controller?.switchCamera();
               },
             ),
           ],
