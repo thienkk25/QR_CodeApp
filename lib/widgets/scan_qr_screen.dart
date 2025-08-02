@@ -29,11 +29,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   late bool isAutoOpenLink;
   double currentZoom = 0.0;
   double baseZoom = 1.0;
+
   @override
-  void initState() {
+  Future<void> initState() async {
+    await checkScriptForWeb(context);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      startSharedPreferences();
-      checkScriptForWeb(context);
+      await startSharedPreferences();
     });
     super.initState();
   }
