@@ -26,7 +26,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   late bool isScanMode;
   bool isFlashOn = false;
   bool isScanned = false;
-  bool isAutoOpenLink = false;
+  late bool isAutoOpenLink;
   double currentZoom = 0.0;
   double baseZoom = 1.0;
   @override
