@@ -29,11 +29,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   late bool isAutoOpenLink;
   double currentZoom = 0.0;
   double baseZoom = 1.0;
+  bool isLoading = true;
 
   @override
-  Future<void> initState() async {
-    await checkScriptForWeb(context);
+  void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await checkScriptForWeb(context);
       await startSharedPreferences();
     });
     super.initState();
@@ -55,6 +56,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     setState(() {
       isAutoOpenLink = getAutoOpenLink ?? false;
       isScanMode = getScanMode ?? false;
+      isLoading = false;
     });
   }
 
@@ -144,6 +146,14 @@ class _ScanQrScreenState extends State<ScanQrScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('QR Scanner'),

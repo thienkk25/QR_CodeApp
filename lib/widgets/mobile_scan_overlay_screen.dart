@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_code_app/widgets/scanner_animation_line_screen.dart';
 
 class MobileScanOverlayScreen extends StatefulWidget {
   final void Function(MobileScannerController controllerChild) toggleMode;
@@ -109,6 +110,10 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
               painter: ScanWindowOverlay(scanWindow: scanWindow),
             );
           },
+        ),
+        Positioned.fromRect(
+          rect: scanWindow,
+          child: ScannerAnimationLineScreen(),
         ),
       ],
     );
