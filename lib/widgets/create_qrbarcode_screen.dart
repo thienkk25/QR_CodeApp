@@ -74,7 +74,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen> {
 
       String path;
       if (Platform.isAndroid) {
-        final dir = Directory('/storage/emulated/0/Pictures');
+        final dir = Directory('/storage/emulated/0/Pictures/ScanQR');
         if (!dir.existsSync()) {
           dir.createSync(recursive: true);
         }
@@ -153,13 +153,18 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen> {
                     Center(
                       child: RepaintBoundary(
                         key: globalKey,
-                        child: BarcodeWidget(
-                          barcode: barcodeTypes[selectedType]!,
-                          data: controller.text,
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: 200,
-                          color: Theme.of(context).secondaryHeaderColor,
-                          errorBuilder: (context, error) => Text(error),
+                        child: Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          padding: const EdgeInsets.all(
+                              8), // Nếu muốn chừa khoảng trống
+                          child: BarcodeWidget(
+                            barcode: barcodeTypes[selectedType]!,
+                            data: controller.text,
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: 200,
+                            color: Theme.of(context).secondaryHeaderColor,
+                            errorBuilder: (context, error) => Text(error),
+                          ),
                         ),
                       ),
                     ),

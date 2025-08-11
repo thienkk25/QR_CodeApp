@@ -160,11 +160,14 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         title: const Text('QR Scanner'),
         centerTitle: true,
         leading: InkWell(
-            onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateQrbarcodeScreen(),
-                )),
+            onTap: () {
+              controller?.stop();
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateQrbarcodeScreen(),
+                  )).then((value) => controller?.start());
+            },
             child: Icon(Icons.add_box_outlined)),
         actions: [
           IconButton(
