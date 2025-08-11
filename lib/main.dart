@@ -24,6 +24,7 @@ class MainApp extends StatelessWidget {
         darkTheme: ThemeData(
           brightness: Brightness.dark,
           scaffoldBackgroundColor: Color(0xFF121212),
+          secondaryHeaderColor: Colors.white54,
           primarySwatch: Colors.deepPurple,
           appBarTheme: const AppBarTheme(
             backgroundColor: Color(0xFF1F1F1F),
@@ -37,6 +38,11 @@ class MainApp extends StatelessWidget {
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Colors.deepPurple,
           ),
+        ),
+        theme: ThemeData(
+          brightness: Brightness.light,
+          scaffoldBackgroundColor: Colors.white,
+          secondaryHeaderColor: Color(0xFF121212),
         ),
         themeMode: ThemeMode.system,
         debugShowCheckedModeBanner: false,

@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:qr_code_app/widgets/create_qrbarcode_screen.dart';
 import 'package:qr_code_app/widgets/help_client_screen.dart';
 import 'package:qr_code_app/widgets/history_scanner_screen.dart';
 import 'package:qr_code_app/widgets/mobile_scan_normal_screen.dart';
@@ -158,6 +159,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
       appBar: AppBar(
         title: const Text('QR Scanner'),
         centerTitle: true,
+        leading: InkWell(
+            onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateQrbarcodeScreen(),
+                )),
+            child: Icon(Icons.add_box_outlined)),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
