@@ -16,3 +16,7 @@ Support Flash(on/off), Gallery, Camera (front, selfie).
 
 **Version 1.1.0:**
 Add pinch-to-zoom feature for camera using two fingers and optimize performance.
+
+**Version 1.2.0:**
+Improved performance and stability
+Added code QR, ISBN, Aztec, ... and save image
