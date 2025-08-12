@@ -424,6 +424,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   }
 
   void manualOpenLink(bool isUrl, String value) {
+    controller?.pause();
     saveHistory(value);
     if (!mounted) return;
     showDialog(
@@ -462,6 +463,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         ],
       ),
     );
+    controller?.start();
   }
 
   void saveHistory(String value) {
