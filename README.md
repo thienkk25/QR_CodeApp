@@ -20,3 +20,7 @@ Add pinch-to-zoom feature for camera using two fingers and optimize performance.
 **Version 1.2.0:**
 Improved performance and stability
 Added code QR, ISBN, Aztec, ... and save image
+
+
+## Result app show img
+<img alt="home" width="200" src="assets/imgsResult/home_qr.jpg"> <img alt="tab bar" width="200" src="assets/imgsResult/tabbar_qr.jpg"> <img alt="history" width="200" src="assets/imgsResult/history_qr.jpg"> <img alt="create qr" width="200" src="assets/imgsResult/create_qr.jpg">
