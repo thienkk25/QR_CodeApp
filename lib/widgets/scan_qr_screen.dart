@@ -423,11 +423,10 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     }
   }
 
-  void manualOpenLink(bool isUrl, String value) {
-    controller?.pause();
+  Future<void> manualOpenLink(bool isUrl, String value) async {
     saveHistory(value);
     if (!mounted) return;
-    showDialog(
+    await showDialog(
       barrierDismissible: false,
       context: context,
       builder: (_) => AlertDialog(
@@ -463,7 +462,6 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         ],
       ),
     );
-    controller?.start();
   }
 
   void saveHistory(String value) {

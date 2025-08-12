@@ -6,7 +6,7 @@ class MobileScanOverlayScreen extends StatefulWidget {
   final void Function(MobileScannerController controllerChild) toggleMode;
   final bool isAutoOpenLink;
   final Future<void> Function(String) autoOpenLink;
-  final void Function(bool isUrl, String value) manualOpenLink;
+  final Future<void> Function(bool isUrl, String value) manualOpenLink;
   const MobileScanOverlayScreen(
       {super.key,
       required this.toggleMode,
@@ -46,10 +46,9 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
       if (isUrl && widget.isAutoOpenLink) {
         await widget.autoOpenLink(value);
       } else {
-        widget.manualOpenLink(isUrl, value);
+        await widget.manualOpenLink(isUrl, value);
       }
-
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() => isScanned = false);
         }

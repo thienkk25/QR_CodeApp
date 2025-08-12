@@ -5,7 +5,7 @@ class MobileScanNormalScreen extends StatefulWidget {
   final void Function(MobileScannerController controllerChild) toggleMode;
   final bool isAutoOpenLink;
   final Future<void> Function(String) autoOpenLink;
-  final void Function(bool isUrl, String value) manualOpenLink;
+  final Future<void> Function(bool isUrl, String value) manualOpenLink;
   const MobileScanNormalScreen(
       {super.key,
       required this.toggleMode,
@@ -44,10 +44,9 @@ class _MobileScanNormalScreenState extends State<MobileScanNormalScreen> {
       if (isUrl && widget.isAutoOpenLink) {
         await widget.autoOpenLink(value);
       } else {
-        widget.manualOpenLink(isUrl, value);
+        await widget.manualOpenLink(isUrl, value);
       }
-
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() => isScanned = false);
         }
