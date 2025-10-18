@@ -20,6 +20,18 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
       body: ValueListenableBuilder(
           valueListenable: box.listenable(),
           builder: (context, value, child) {
+            if (box.isEmpty) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text('Lịch sử quét'),
+                  centerTitle: true,
+                ),
+                body: Center(
+                  child: Text("Hiện tại không có lịch sử"),
+                ),
+              );
+            }
+
             return CustomScrollView(
               slivers: [
                 SliverAppBar(
@@ -80,17 +92,6 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                       ),
                     );
                   }, childCount: box.length),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Center(
-                      child: Text(
-                        'Hết!',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
                 ),
               ],
             );

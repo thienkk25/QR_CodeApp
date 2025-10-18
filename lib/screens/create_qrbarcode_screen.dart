@@ -115,7 +115,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Column(
-            spacing: 10,
+            spacing: 15,
             children: [
               TextField(
                 controller: controller,
@@ -133,18 +133,44 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen> {
                 cursorColor: Theme.of(context).secondaryHeaderColor,
                 onChanged: (_) => setState(() {}),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Loại:"),
-                  DropdownButton<String>(
-                    value: selectedType,
-                    items: barcodeTypes.keys
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                        .toList(),
-                    onChanged: (value) => setState(() => selectedType = value!),
+              DropdownButtonFormField<String>(
+                initialValue: selectedType,
+                decoration: InputDecoration(
+                  labelText: 'Loại mã vạch',
+                  labelStyle:
+                      TextStyle(color: Theme.of(context).secondaryHeaderColor),
+                  filled: true,
+                  fillColor: Theme.of(context).scaffoldBackgroundColor,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).secondaryHeaderColor),
                   ),
-                ],
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(3),
+                    borderSide: BorderSide(
+                        color: Theme.of(context).secondaryHeaderColor),
+                  ),
+                ),
+                icon: Icon(Icons.qr_code_2,
+                    color: Theme.of(context).secondaryHeaderColor),
+                dropdownColor: Theme.of(context).scaffoldBackgroundColor,
+                style: TextStyle(
+                  color: Theme.of(context).secondaryHeaderColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                items: barcodeTypes.keys
+                    .map(
+                      (e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => setState(() => selectedType = value!),
               ),
               if (controller.text.isNotEmpty)
                 Column(
@@ -179,13 +205,15 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen> {
                           gradient: const LinearGradient(
                             begin: Alignment.centerRight,
                             end: Alignment.centerLeft,
-                            colors: [Colors.blueGrey, Colors.greenAccent],
+                            colors: [Colors.blueGrey, Colors.black87],
                           ),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Lưu ảnh',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Theme.of(context).secondaryHeaderColor,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),

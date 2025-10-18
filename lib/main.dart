@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:qr_code_app/models/scan_history_model.dart'
     show ScanHistoryModel, ScanHistoryModelAdapter;
-import 'package:qr_code_app/widgets/scan_qr_screen.dart';
+import 'package:qr_code_app/screens/scan_qr_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +44,7 @@ class MainApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
           secondaryHeaderColor: Color(0xFF121212),
         ),
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark,
         debugShowCheckedModeBanner: false,
         home: ScanQrScreen());
   }
