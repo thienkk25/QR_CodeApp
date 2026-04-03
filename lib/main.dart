@@ -3,6 +3,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:qr_code_app/models/scan_history_model.dart'
     show ScanHistoryModel, ScanHistoryModelAdapter;
 import 'package:qr_code_app/screens/scan_qr_screen.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,31 +22,12 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: Color(0xFF121212),
-          secondaryHeaderColor: Colors.white54,
-          primarySwatch: Colors.deepPurple,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF1F1F1F),
-            foregroundColor: Colors.white,
-            elevation: 1,
-          ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          textTheme: const TextTheme(
-            bodyMedium: TextStyle(color: Colors.white),
-          ),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Colors.deepPurple,
-          ),
-        ),
-        theme: ThemeData(
-          brightness: Brightness.light,
-          scaffoldBackgroundColor: Colors.white,
-          secondaryHeaderColor: Color(0xFF121212),
-        ),
-        themeMode: ThemeMode.dark,
-        debugShowCheckedModeBanner: false,
-        home: ScanQrScreen());
+      title: 'QR Scanner Pro',
+      darkTheme: AppTheme.dark,
+      theme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
+      debugShowCheckedModeBanner: false,
+      home: const ScanQrScreen(),
+    );
   }
 }

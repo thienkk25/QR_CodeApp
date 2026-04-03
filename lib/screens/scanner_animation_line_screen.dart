@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
 
 class ScannerAnimationLineScreen extends StatefulWidget {
   const ScannerAnimationLineScreen({super.key});
@@ -16,15 +17,14 @@ class _ScannerAnimationLineScreenState extends State<ScannerAnimationLineScreen>
   @override
   void initState() {
     super.initState();
-
     controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 1800),
     )..repeat(reverse: true);
 
     animation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
       parent: controller,
-      curve: Curves.linear,
+      curve: Curves.easeInOut,
     ));
   }
 
@@ -46,15 +46,28 @@ class _ScannerAnimationLineScreenState extends State<ScannerAnimationLineScreen>
       },
       child: Container(
         width: double.infinity,
-        height: 4,
+        height: 3,
         decoration: BoxDecoration(
-          color: Colors.white70,
+          gradient: const LinearGradient(
+            colors: [
+              Colors.transparent,
+              AppColors.accentBlue,
+              AppColors.accentPurple,
+              AppColors.accentBlue,
+              Colors.transparent,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(2),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withValues(alpha: .6),
-              blurRadius: 20,
-              spreadRadius: 5,
-              offset: Offset(0, 0),
+              color: AppColors.accentPurple.withAlpha(200),
+              blurRadius: 18,
+              spreadRadius: 4,
+            ),
+            BoxShadow(
+              color: AppColors.accentCyan.withAlpha(120),
+              blurRadius: 30,
+              spreadRadius: 2,
             ),
           ],
         ),

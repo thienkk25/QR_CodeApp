@@ -1,34 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_code_app/screens/scanner_animation_line_screen.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
 
 class MobileScanOverlayScreen extends StatefulWidget {
   final void Function(MobileScannerController controllerChild) toggleMode;
   final bool isAutoOpenLink;
   final Future<void> Function(String) autoOpenLink;
   final Future<void> Function(bool isUrl, String value) manualOpenLink;
-  const MobileScanOverlayScreen(
-      {super.key,
-      required this.toggleMode,
-      required this.isAutoOpenLink,
-      required this.autoOpenLink,
-      required this.manualOpenLink});
+
+  const MobileScanOverlayScreen({
+    super.key,
+    required this.toggleMode,
+    required this.isAutoOpenLink,
+    required this.autoOpenLink,
+    required this.manualOpenLink,
+  });
 
   @override
   State<MobileScanOverlayScreen> createState() =>
       _MobileScanOverlayScreenState();
 }
 
-class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
+class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
+    with SingleTickerProviderStateMixin {
   MobileScannerController controller = MobileScannerController();
   bool isScanned = false;
 
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnim;
+
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.toggleMode(controller);
     });
-    super.initState();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _pulseAnim = Tween<double>(begin: 1.0, end: 1.06).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleDetect(BarcodeCapture capture) async {
@@ -60,26 +82,20 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
-    final padding = mediaQuery.padding;
 
-    const appBarHeight = 82.7;
-    const bottomAppBarHeight = 56.0;
+    // Responsive scan window size
+    final windowSize = (screenSize.width * 0.65).clamp(200.0, 300.0);
 
-    final availableHeight = screenSize.height -
-        appBarHeight -
-        bottomAppBarHeight -
-        padding.top -
-        padding.bottom;
-
+    // Body extends behind AppBar (extendBodyBehindAppBar: true) so center on full screen
     final scanWindowCenter = Offset(
       screenSize.width / 2,
-      availableHeight / 2,
+      screenSize.height / 2,
     );
 
     final scanWindow = Rect.fromCenter(
       center: scanWindowCenter,
-      width: 200,
-      height: 200,
+      width: windowSize,
+      height: windowSize,
     );
 
     return Stack(
@@ -91,6 +107,8 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
           fit: BoxFit.cover,
           onDetect: _handleDetect,
         ),
+
+        // Dark overlay with cut-out
         ValueListenableBuilder(
           valueListenable: controller,
           builder: (context, value, child) {
@@ -98,103 +116,173 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen> {
                 !value.isRunning ||
                 value.error != null) {
               return Center(
-                child: Text(
-                  value.error?.errorDetails?.message ??
-                      'Đang khởi tạo máy quét...',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgCardSolid.withAlpha(200),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    value.error?.errorDetails?.message ??
+                        'Đang khởi tạo máy quét...',
+                    style: const TextStyle(
+                        color: AppColors.textPrimary, fontSize: 15),
+                  ),
                 ),
               );
             }
             return CustomPaint(
-              painter: ScanWindowOverlay(scanWindow: scanWindow),
+              painter: _ScanWindowOverlay(scanWindow: scanWindow),
             );
           },
         ),
+
+        // Animated scan window frame
+        Positioned(
+          left: scanWindow.left,
+          top: scanWindow.top,
+          width: scanWindow.width,
+          height: scanWindow.height,
+          child: ScaleTransition(
+            scale: _pulseAnim,
+            child: _ScanFrame(size: windowSize),
+          ),
+        ),
+
+        // Animated scan line inside window
         Positioned.fromRect(
           rect: scanWindow,
-          child: ScannerAnimationLineScreen(),
+          child: const ScannerAnimationLineScreen(),
+        ),
+
+        // "Point camera at QR code" label
+        Positioned(
+          left: 0,
+          right: 0,
+          top: scanWindow.bottom + 20,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.bgCardSolid.withAlpha(180),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: const Text(
+                'Hướng camera vào mã QR / Barcode',
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
 }
 
-class ScanWindowOverlay extends CustomPainter {
-  final Rect scanWindow;
+/// Corner-bracket frame with glow
+class _ScanFrame extends StatelessWidget {
+  final double size;
+  const _ScanFrame({required this.size});
 
-  ScanWindowOverlay({required this.scanWindow});
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _FramePainter(),
+    );
+  }
+}
+
+class _FramePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const cornerLen = 36.0;
+    const strokeW = 4.0;
+
+    final glowPaint = Paint()
+      ..color = AppColors.accentPurple.withAlpha(100)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeW + 8
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    final cornerPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [AppColors.accentPurple, AppColors.accentCyan],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeW
+      ..strokeCap = StrokeCap.round;
+
+    final corners = [
+      // Top-left
+      [Offset(0, cornerLen), Offset.zero, Offset(cornerLen, 0)],
+      // Top-right
+      [
+        Offset(size.width - cornerLen, 0),
+        Offset(size.width, 0),
+        Offset(size.width, cornerLen)
+      ],
+      // Bottom-left
+      [
+        Offset(0, size.height - cornerLen),
+        Offset(0, size.height),
+        Offset(cornerLen, size.height)
+      ],
+      // Bottom-right
+      [
+        Offset(size.width - cornerLen, size.height),
+        Offset(size.width, size.height),
+        Offset(size.width, size.height - cornerLen)
+      ],
+    ];
+
+    for (final corner in corners) {
+      final path = Path()
+        ..moveTo(corner[0].dx, corner[0].dy)
+        ..lineTo(corner[1].dx, corner[1].dy)
+        ..lineTo(corner[2].dx, corner[2].dy);
+      canvas.drawPath(path, glowPaint);
+      canvas.drawPath(path, cornerPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Dark semi-transparent overlay with transparent cut-out
+class _ScanWindowOverlay extends CustomPainter {
+  final Rect scanWindow;
+  _ScanWindowOverlay({required this.scanWindow});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black45
-      ..style = PaintingStyle.fill;
-
     final outerRect = Rect.fromLTWH(0, 0, size.width, size.height);
+
+    // Vignette gradient overlay
+    final paint = Paint()
+      ..shader = RadialGradient(
+        center: Alignment.center,
+        radius: 1.2,
+        colors: [
+          Colors.black.withAlpha(30),
+          Colors.black.withAlpha(160),
+        ],
+      ).createShader(outerRect);
+
     final path = Path()
       ..addRect(outerRect)
-      ..addRect(scanWindow)
+      ..addRRect(
+          RRect.fromRectAndRadius(scanWindow, const Radius.circular(4)))
       ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);
-
-    final borderPaint = Paint()
-      ..color = Colors.white.withAlpha(100)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
-
-    canvas.drawRect(scanWindow, borderPaint);
-
-    final cornerPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8.0
-      ..strokeCap = StrokeCap.round;
-
-    const cornerLength = 30.0;
-    canvas.drawLine(
-      scanWindow.topLeft,
-      scanWindow.topLeft + const Offset(cornerLength, 0),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      scanWindow.topLeft,
-      scanWindow.topLeft + const Offset(0, cornerLength),
-      cornerPaint,
-    );
-
-    canvas.drawLine(
-      scanWindow.topRight,
-      scanWindow.topRight + const Offset(-cornerLength, 0),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      scanWindow.topRight,
-      scanWindow.topRight + const Offset(0, cornerLength),
-      cornerPaint,
-    );
-
-    canvas.drawLine(
-      scanWindow.bottomLeft,
-      scanWindow.bottomLeft + const Offset(cornerLength, 0),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      scanWindow.bottomLeft,
-      scanWindow.bottomLeft + const Offset(0, -cornerLength),
-      cornerPaint,
-    );
-
-    canvas.drawLine(
-      scanWindow.bottomRight,
-      scanWindow.bottomRight + const Offset(-cornerLength, 0),
-      cornerPaint,
-    );
-    canvas.drawLine(
-      scanWindow.bottomRight,
-      scanWindow.bottomRight + const Offset(0, -cornerLength),
-      cornerPaint,
-    );
   }
 
   @override
