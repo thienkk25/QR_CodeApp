@@ -35,5 +35,4 @@ Complete UI/UX redesign — modern dark theme with premium glassmorphism effects
 10. **Responsive**: Scan window size adapts to screen width (`clamp(200, 300)`). Tested on Android, iOS, Web, Desktop.
 11. **Page Transitions**: Custom `SlideTransition + FadeTransition` on navigation.
 
-## Result app show img
-<img alt="home" width="200" src="assets/imgsResult/home_qr.jpg"> <img alt="tab bar" width="200" src="assets/imgsResult/tabbar_qr.jpg"> <img alt="history" width="200" src="assets/imgsResult/history_qr.jpg"> <img alt="create qr" width="200" src="assets/imgsResult/create_qr.jpg">
+12. MIT © by ThienNguyen
