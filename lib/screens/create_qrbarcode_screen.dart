@@ -195,6 +195,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
               onChanged: _onTextChanged,
               maxLines: 3,
               minLines: 1,
+              keyboardType: TextInputType.text,
             ),
 
             const SizedBox(height: 20),

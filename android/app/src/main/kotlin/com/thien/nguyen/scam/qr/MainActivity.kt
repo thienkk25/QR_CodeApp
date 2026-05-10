@@ -1,4 +1,4 @@
-package com.thien.qr_code_app
+package com.thien.nguyen.scam.qr
 
 import io.flutter.embedding.android.FlutterActivity
 
