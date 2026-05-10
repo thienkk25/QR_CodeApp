@@ -89,48 +89,34 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     BuildContext context,
   ) async {
     final cameraStatus = await Permission.camera.status;
+
+    if (!cameraStatus.isGranted && !cameraStatus.isLimited) {
+      if (cameraStatus.isPermanentlyDenied) {
+        openAppSettings();
+      } else if (cameraStatus.isRestricted) {
+        if (context.mounted) {
+          await showDialog(
+            context: context,
+            builder: (_) => const AlertDialog(
+              title: Text("Không thể truy cập camera"),
+              content: Text(
+                "Quyền camera đã bị hệ thống hạn chế kiểm soát cha mẹ hoặc thiết bị không cho phép.",
+              ),
+            ),
+          );
+        }
+      } else {
+        await withCallbacks(Permission.camera).request();
+      }
+    }
+
     final photoStatus = await Permission.photos.status;
-
-    if ((cameraStatus.isGranted || cameraStatus.isLimited) &&
-        (photoStatus.isGranted || photoStatus.isLimited)) {
-      return;
+    
+    if (!photoStatus.isGranted && !photoStatus.isLimited) {
+      if (!photoStatus.isPermanentlyDenied && !photoStatus.isRestricted) {
+        await withCallbacks(Permission.photos).request();
+      }
     }
-
-    if (cameraStatus.isPermanentlyDenied || photoStatus.isPermanentlyDenied) {
-      openAppSettings();
-      return;
-    }
-
-    if (cameraStatus.isRestricted) {
-      if (!context.mounted) return;
-      await showDialog(
-        context: context,
-        builder: (_) => const AlertDialog(
-          title: Text("Không thể truy cập camera"),
-          content: Text(
-            "Quyền camera đã bị hệ thống hạn chế kiểm soát cha mẹ hoặc thiết bị không cho phép.",
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (photoStatus.isRestricted) {
-      if (!context.mounted) return;
-      await showDialog(
-        context: context,
-        builder: (_) => const AlertDialog(
-          title: Text("Không thể truy cập thư viện ảnh"),
-          content: Text(
-            "Quyền truy cập thư viện ảnh đã bị hệ thống hạn chế kiểm soát cha mẹ hoặc thiết bị không cho phép.",
-          ),
-        ),
-      );
-      return;
-    }
-
-    await withCallbacks(Permission.camera).request();
-    await withCallbacks(Permission.photos).request();
   }
 
   Permission withCallbacks(Permission permission) {
@@ -388,7 +374,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                       shaderCallback: (bounds) =>
                           AppColors.accentGradientH.createShader(bounds),
                       child: const Text(
-                        'QR Scanner Pro',
+                        'QR Scanner',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -420,7 +406,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 72,
+          padding: const EdgeInsets.only(top: 12, bottom: 8),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
@@ -792,7 +778,7 @@ class _SettingsPanelState extends State<_SettingsPanel> {
         Container(
           padding: const EdgeInsets.all(20),
           child: const Text(
-            'QR Scanner Pro  •  v1.3.0',
+            'QR Scanner  •  v1.3.0',
             style: AppTextStyles.labelSmall,
             textAlign: TextAlign.center,
           ),

@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'QR Scanner Pro',
+      title: 'QR Scanner',
       darkTheme: AppTheme.dark,
       theme: AppTheme.dark,
       themeMode: ThemeMode.dark,

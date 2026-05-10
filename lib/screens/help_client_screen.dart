@@ -48,15 +48,14 @@ class HelpClientScreen extends StatelessWidget {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.qr_code_scanner,
-                        color: Colors.white, size: 48),
+                    Icon(Icons.qr_code_scanner, color: Colors.white, size: 48),
                     SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'QR Scanner Pro',
+                            'QR Scanner',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -86,7 +85,8 @@ class HelpClientScreen extends StatelessWidget {
                 icon: Icons.flash_on_rounded,
                 iconColor: AppColors.warning,
                 title: 'Đèn Flash',
-                description: 'Bật/tắt đèn flash của camera để quét trong bóng tối.',
+                description:
+                    'Bật/tắt đèn flash của camera để quét trong bóng tối.',
               ),
               _HelpCard(
                 icon: Icons.photo_library_rounded,

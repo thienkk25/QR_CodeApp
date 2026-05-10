@@ -1,4 +1,4 @@
-# QR Scanner Pro
+# QR Scanner
 
 A modern QR code & Barcode scanner app built with Flutter.
 

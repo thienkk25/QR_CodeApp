@@ -17,6 +17,7 @@ dependencies:
   hive_flutter: ^1.1.0
   barcode_widget: ^2.0.4
   path_provider: ^2.1.5
+  image_picker_ios: ^0.8.13+6
 
 dev_dependencies:
   flutter_test:
