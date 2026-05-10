@@ -5,6 +5,7 @@ import 'package:qr_code_app/config/format_time.dart';
 import 'package:qr_code_app/models/scan_history_model.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 
 class HistoryScannerScreen extends StatefulWidget {
   const HistoryScannerScreen({super.key});
@@ -20,17 +21,17 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Xóa tất cả lịch sử?'),
-        content: const Text('Hành động này không thể hoàn tác.'),
+        title: Text(context.l10n.get('confirm_delete_all_title')),
+        content: Text(context.l10n.get('confirm_delete_all_desc')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
+            child: Text(context.l10n.get('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: context.colors.error),
-            child: const Text('Xóa hết'),
+            child: Text(context.l10n.get('delete_all_confirm')),
           ),
         ],
       ),
@@ -83,7 +84,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
     return Scaffold(
       backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
-        title: const Text('Lịch sử quét'),
+        title: Text(context.l10n.get('scan_history')),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -106,10 +107,10 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Chưa có lịch sử', style: AppTextStyles.titleMedium),
+            Text(context.l10n.get('no_history'), style: AppTextStyles.titleMedium),
             const SizedBox(height: 8),
-            const Text(
-              'Quét mã QR hoặc Barcode để bắt đầu',
+            Text(
+              context.l10n.get('no_history_desc'),
               style: AppTextStyles.bodyMedium,
             ),
           ],
@@ -125,7 +126,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
       pinned: true,
       floating: true,
       centerTitle: true,
-      title: const Text('Lịch sử quét', style: AppTextStyles.titleLarge),
+      title: Text(context.l10n.get('scan_history'), style: AppTextStyles.titleLarge),
       actions: [
         // Count badge
         ValueListenableBuilder(
@@ -151,7 +152,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         const SizedBox(width: 6),
         // Clear all button
         IconButton(
-          tooltip: 'Xóa tất cả',
+          tooltip: context.l10n.get('delete_all'),
           icon: Container(
             width: 34,
             height: 34,
@@ -200,7 +201,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
             Icon(Icons.delete_rounded, color: context.colors.error, size: 22),
             const SizedBox(height: 4),
             Text(
-              'Xóa',
+              context.l10n.get('delete'),
               style: TextStyle(
                 color: context.colors.error,
                 fontSize: 11,
@@ -215,7 +216,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         onTap: () {
           Clipboard.setData(ClipboardData(text: item.content));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã sao chép!')),
+            SnackBar(content: Text(context.l10n.get('copied'))),
           );
         },
         child: Container(
@@ -264,7 +265,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                       child: Text(
                         isUrl && domain.isNotEmpty
                             ? domain
-                            : (isUrl ? 'URL' : 'Văn bản'),
+                            : (isUrl ? 'URL' : context.l10n.get('text')),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: isUrl
                               ? context.colors.accentPurple
@@ -303,7 +304,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                                   size: 12, color: context.colors.accentBlue),
                               const SizedBox(width: 4),
                               Text(
-                                'Mở',
+                                  context.l10n.get('open'),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: context.colors.accentBlue,
@@ -347,7 +348,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                     ),
                     const Spacer(),
                     Text(
-                      'Nhấn để sao chép',
+                      context.l10n.get('tap_to_copy'),
                       style: AppTextStyles.labelSmall
                           .copyWith(color: context.colors.textMuted.withAlpha(130)),
                     ),

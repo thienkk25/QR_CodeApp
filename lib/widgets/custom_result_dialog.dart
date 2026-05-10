@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Custom bottom sheet that replaces AlertDialog for scan results.
@@ -70,9 +71,9 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: context.colors.success, size: 18),
+            Icon(Icons.check_circle, color: ctx.colors.success, size: 18),
             const SizedBox(width: 8),
-            const Text('Đã sao chép vào clipboard!'),
+            Text(ctx.l10n.get('copied_to_clipboard')),
           ],
         ),
         duration: const Duration(seconds: 2),
@@ -154,11 +155,11 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Đã quét thành công',
+                          context.l10n.get('scan_successful'),
                           style: AppTextStyles.titleMedium,
                         ),
                         Text(
-                          isUrl ? 'Đường dẫn URL' : 'Văn bản',
+                          isUrl ? context.l10n.get('url_link') : context.l10n.get('text'),
                           style: AppTextStyles.labelSmall,
                         ),
                       ],
@@ -257,7 +258,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                         icon: _copied
                             ? Icons.check_circle_rounded
                             : Icons.copy_rounded,
-                        label: _copied ? 'Đã sao chép' : 'Sao chép',
+                        label: _copied ? context.l10n.get('copied') : context.l10n.get('copy'),
                         onTap: () => _copyToClipboard(context),
                         color: _copied ? context.colors.success : context.colors.textSecondary,
                         filled: false,
@@ -268,7 +269,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                       Expanded(
                         child: _ActionBtn(
                           icon: Icons.open_in_browser_rounded,
-                          label: 'Mở liên kết',
+                          label: context.l10n.get('open_link'),
                           onTap: _openUrl,
                           color: context.colors.accentPurple,
                           filled: true,

@@ -8,6 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/widgets/glass_container.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 
 class CreateQrbarcodeScreen extends StatefulWidget {
   const CreateQrbarcodeScreen({super.key});
@@ -80,26 +81,37 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
     }
   }
 
-  Future<String> getDesktopPath() async {
+  Future<String> getDesktopPath(String notFoundMsg) async {
     final home =
         Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
     final desktop = Directory('$home/Desktop');
     if (!desktop.existsSync()) {
-      throw Exception('Không tìm thấy thư mục Desktop.');
+      throw Exception(notFoundMsg);
     }
     return desktop.path;
   }
 
   Future<void> savePng(BuildContext context) async {
+    final widgetNotFoundMsg = context.l10n.get('widget_not_found');
+    final cannotConvertPngMsg = context.l10n.get('cannot_convert_png');
+    final platformNotSupportedMsg = context.l10n.get('platform_not_supported');
+    final desktopNotFoundMsg = context.l10n.get('desktop_not_found');
+    final savedToMsg = context.l10n.get('saved_to');
+    final errorPrefixMsg = context.l10n.get('error_prefix');
+
     try {
       await Future.delayed(const Duration(milliseconds: 100));
       final boundary = globalKey.currentContext?.findRenderObject()
           as RenderRepaintBoundary?;
-      if (boundary == null) throw Exception('Không tìm thấy widget.');
+      if (boundary == null) {
+        throw Exception(widgetNotFoundMsg);
+      }
 
       final image = await boundary.toImage(pixelRatio: 3.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) throw Exception('Không thể chuyển thành PNG.');
+      if (byteData == null) {
+        throw Exception(cannotConvertPngMsg);
+      }
 
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
@@ -113,9 +125,9 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
         path = dir.path;
       } else if (!kIsWeb &&
           (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
-        path = await getDesktopPath();
+        path = await getDesktopPath(desktopNotFoundMsg);
       } else {
-        throw UnsupportedError('Nền tảng chưa hỗ trợ lưu ảnh.');
+        throw UnsupportedError(platformNotSupportedMsg);
       }
 
       final file =
@@ -127,10 +139,10 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.check_circle,
-                  color: context.colors.success, size: 18),
+              Icon(Icons.check_circle, color: context.colors.success, size: 18),
               const SizedBox(width: 8),
-              Expanded(child: Text('Đã lưu: ${file.path}')),
+              Expanded(
+                  child: Text('$savedToMsg${file.path}')),
             ],
           ),
         ),
@@ -143,7 +155,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
             children: [
               Icon(Icons.error_rounded, color: context.colors.error, size: 18),
               const SizedBox(width: 8),
-              Expanded(child: Text('Lỗi: $e')),
+              Expanded(child: Text('$errorPrefixMsg$e')),
             ],
           ),
         ),
@@ -158,7 +170,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
     return Scaffold(
       backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
-        title: const Text('Tạo mã QR / Barcode'),
+        title: Text(context.l10n.get('create_qr_barcode')),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: GestureDetector(
@@ -181,13 +193,13 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Input field ──────────────────────────────
-            _SectionLabel(label: 'Nội dung'),
+            _SectionLabel(label: context.l10n.get('content_label')),
             const SizedBox(height: 8),
             TextField(
               controller: textController,
               style: TextStyle(color: context.colors.textPrimary),
               decoration: InputDecoration(
-                hintText: 'Nhập URL, văn bản, số điện thoại...',
+                hintText: context.l10n.get('enter_content_hint'),
                 prefixIcon: Icon(Icons.edit_rounded,
                     color: context.colors.textMuted, size: 20),
               ),
@@ -201,7 +213,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
             const SizedBox(height: 20),
 
             // ── Type selector ────────────────────────────
-            _SectionLabel(label: 'Loại mã'),
+            _SectionLabel(label: context.l10n.get('code_type_label')),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: selectedType,
@@ -250,7 +262,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _SectionLabel(label: 'Xem trước'),
+                          _SectionLabel(
+                              label: context.l10n.get('preview_label')),
                           const SizedBox(height: 12),
 
                           // Barcode card with glow
@@ -260,7 +273,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: context.colors.accentPurple.withAlpha(60),
+                                  color:
+                                      context.colors.accentPurple.withAlpha(60),
                                   blurRadius: 30,
                                   spreadRadius: 2,
                                 ),
@@ -289,7 +303,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                                     child: Text(
                                       error,
                                       style: TextStyle(
-                                          color: context.colors.error, fontSize: 13),
+                                          color: context.colors.error,
+                                          fontSize: 13),
                                     ),
                                   ),
                                 ),
@@ -305,15 +320,15 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                             width: double.infinity,
                             height: 52,
                             padding: EdgeInsets.zero,
-                            child: const Row(
+                            child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.download_rounded,
                                     color: Colors.white, size: 20),
                                 SizedBox(width: 8),
                                 Text(
-                                  'Lưu ảnh',
-                                  style: TextStyle(
+                                  context.l10n.get('save_image'),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 15,
@@ -346,8 +361,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                           size: 38, color: context.colors.textMuted),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Nhập nội dung để tạo mã',
+                    Text(
+                      context.l10n.get('enter_content_to_create'),
                       style: AppTextStyles.bodyMedium,
                     ),
                   ],

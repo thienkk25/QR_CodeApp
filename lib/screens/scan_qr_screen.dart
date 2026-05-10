@@ -16,7 +16,9 @@ import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/widgets/custom_result_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:qr_code_app/main.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 class ScanQrScreen extends StatefulWidget {
   const ScanQrScreen({super.key});
 
@@ -100,10 +102,10 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         if (context.mounted) {
           await showDialog(
             context: context,
-            builder: (_) => const AlertDialog(
-              title: Text("Không thể truy cập camera"),
+            builder: (_) => AlertDialog(
+              title: Text(context.l10n.get('cannot_access_camera')),
               content: Text(
-                "Quyền camera đã bị hệ thống hạn chế kiểm soát cha mẹ hoặc thiết bị không cho phép.",
+                context.l10n.get('camera_restricted'),
               ),
             ),
           );
@@ -114,7 +116,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     }
 
     final photoStatus = await Permission.photos.status;
-    
+
     if (!photoStatus.isGranted && !photoStatus.isLimited) {
       if (!photoStatus.isPermanentlyDenied && !photoStatus.isRestricted) {
         await withCallbacks(Permission.photos).request();
@@ -185,8 +187,8 @@ class _ScanQrScreenState extends State<ScanQrScreen>
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Đang khởi động...',
+            Text(
+              context.l10n.get('starting'),
               style: AppTextStyles.bodyMedium,
             ),
           ],
@@ -234,7 +236,8 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                       onDarkModeChanged: (v) async {
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('isDarkMode', v);
-                        themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
+                        themeNotifier.value =
+                            v ? ThemeMode.dark : ThemeMode.light;
                         setState(() => isDarkMode = v);
                       },
                       onAutoOpenLinkChanged: (v) async {
@@ -369,7 +372,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                     // Create QR button
                     _AppBarBtn(
                       icon: Icons.add_box_outlined,
-                      tooltip: 'Tạo mã',
+                      tooltip: context.l10n.get('create_code'),
                       onTap: () {
                         controller?.stop();
                         Navigator.push(
@@ -397,7 +400,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                     // Settings button
                     _AppBarBtn(
                       icon: Icons.tune_rounded,
-                      tooltip: 'Cài đặt',
+                      tooltip: context.l10n.get('settings'),
                       onTap: _openSettings,
                     ),
                     const SizedBox(width: 8),
@@ -442,7 +445,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                       icon: isFlashOn
                           ? Icons.flash_on_rounded
                           : Icons.flash_off_rounded,
-                      label: isFlashOn ? 'Đèn bật' : 'Đèn tắt',
+                      label: isFlashOn ? 'ON' : 'OFF',
                       color: isFlashOn
                           ? context.colors.warning
                           : context.colors.textSecondary,
@@ -458,7 +461,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 // Gallery picker
                 _BottomBtn(
                   icon: Icons.photo_library_rounded,
-                  label: 'Thư viện',
+                  label: context.l10n.get('gallery'),
                   color: context.colors.textSecondary,
                   onTap: _pickFromGallery,
                 ),
@@ -466,7 +469,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 // Switch camera
                 _BottomBtn(
                   icon: Icons.cameraswitch_rounded,
-                  label: 'Đổi camera',
+                  label: context.l10n.get('switch_camera'),
                   color: context.colors.textSecondary,
                   onTap: () => controller?.switchCamera(),
                 ),
@@ -505,12 +508,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
           barrierDismissible: false,
           context: context,
           builder: (_) => AlertDialog(
-            title: const Text('Ảnh không đúng định dạng'),
+            title: Text(context.l10n.get('invalid_image_format')),
             content: const Text("Vui lòng thử lại"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
+                child: Text(context.l10n.get('close')),
               ),
             ],
           ),
@@ -694,7 +697,8 @@ class _SettingsPanelState extends State<_SettingsPanel> {
                     color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              const Text('Cài đặt', style: AppTextStyles.titleMedium),
+              Text(context.l10n.get('settings'),
+                  style: AppTextStyles.titleMedium),
               const Spacer(),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
@@ -723,8 +727,8 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               _SettingsTile(
                 icon: Icons.history_rounded,
                 iconColor: context.colors.accentBlue,
-                title: 'Lịch sử quét',
-                subtitle: 'Xem lại các mã đã quét',
+                title: context.l10n.get('scan_history'),
+                subtitle: context.l10n.get('scan_history_sub'),
                 onTap: () {
                   Navigator.pop(context);
                   widget.onHistoryTap();
@@ -737,15 +741,16 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                child: Text('Tuỳ chỉnh', style: AppTextStyles.labelSmall),
+                child: Text(context.l10n.get('customization'),
+                    style: AppTextStyles.labelSmall),
               ),
 
               // Auto open link
               _SettingsTile(
                 icon: Icons.open_in_browser_rounded,
                 iconColor: context.colors.accentCyan,
-                title: 'Tự động mở liên kết',
-                subtitle: 'Mở trình duyệt khi quét URL',
+                title: context.l10n.get('auto_open_url'),
+                subtitle: context.l10n.get('auto_open_url_sub'),
                 trailing: Switch(
                   value: _autoOpen,
                   onChanged: (v) {
@@ -757,10 +762,16 @@ class _SettingsPanelState extends State<_SettingsPanel> {
 
               // Dark mode toggle
               _SettingsTile(
-                icon: _isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                iconColor: _isDarkMode ? context.colors.accentBlue : context.colors.warning,
-                title: 'Giao diện',
-                subtitle: _isDarkMode ? 'Chế độ tối' : 'Chế độ sáng',
+                icon: _isDarkMode
+                    ? Icons.dark_mode_rounded
+                    : Icons.light_mode_rounded,
+                iconColor: _isDarkMode
+                    ? context.colors.accentBlue
+                    : context.colors.warning,
+                title: context.l10n.get('theme'),
+                subtitle: _isDarkMode
+                    ? context.l10n.get('dark_mode')
+                    : context.l10n.get('light_mode'),
                 trailing: Switch(
                   value: _isDarkMode,
                   onChanged: (v) {
@@ -774,14 +785,44 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               _SettingsTile(
                 icon: Icons.crop_free_rounded,
                 iconColor: context.colors.accentPurple,
-                title: 'Bật khung quét',
-                subtitle: 'Hiển thị khung QR scanner',
+                title: context.l10n.get('enable_scan_frame'),
+                subtitle: context.l10n.get('enable_scan_frame_sub'),
                 trailing: Switch(
                   value: _scanMode,
                   onChanged: (v) {
                     setState(() => _scanMode = v);
                     widget.onScanModeChanged(v);
                   },
+                ),
+              ),
+
+              // Language toggle
+              _SettingsTile(
+                icon: Icons.language_rounded,
+                iconColor: context.colors.accentBlue,
+                title: context.l10n.get('language'),
+                subtitle: localeNotifier.value.languageCode == 'vi'
+                    ? 'Tiếng Việt'
+                    : 'English',
+                trailing: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: localeNotifier.value.languageCode,
+                    dropdownColor: context.colors.bgSurface,
+                    style: TextStyle(color: context.colors.textPrimary),
+                    icon: Icon(Icons.arrow_drop_down,
+                        color: context.colors.textMuted),
+                    items: const [
+                      DropdownMenuItem(value: 'vi', child: Text('VI')),
+                      DropdownMenuItem(value: 'en', child: Text('EN')),
+                    ],
+                    onChanged: (String? newValue) async {
+                      if (newValue != null) {
+                        localeNotifier.value = Locale(newValue);
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('language_code', newValue);
+                      }
+                    },
+                  ),
                 ),
               ),
 
@@ -792,8 +833,8 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               _SettingsTile(
                 icon: Icons.help_outline_rounded,
                 iconColor: context.colors.textSecondary,
-                title: 'Hướng dẫn',
-                subtitle: 'Hướng dẫn sử dụng ứng dụng',
+                title: context.l10n.get('help'),
+                subtitle: context.l10n.get('help_sub'),
                 onTap: () {
                   Navigator.pop(context);
                   widget.onHelpTap();

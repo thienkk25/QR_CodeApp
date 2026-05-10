@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_code_app/screens/scanner_animation_line_screen.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 
 class MobileScanOverlayScreen extends StatefulWidget {
   final void Function(MobileScannerController controllerChild) toggleMode;
@@ -124,7 +125,7 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
                   ),
                   child: Text(
                     value.error?.errorDetails?.message ??
-                        'Đang khởi tạo máy quét...',
+                        context.l10n.get('initializing_scanner'),
                     style: TextStyle(
                         color: context.colors.textPrimary, fontSize: 15),
                   ),
@@ -169,7 +170,7 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
                 border: Border.all(color: context.colors.glassBorder),
               ),
               child: Text(
-                'Hướng camera vào mã QR / Barcode',
+                context.l10n.get('point_camera_at_qr_barcode'),
                 style: TextStyle(
                   color: context.colors.textSecondary,
                   fontSize: 12,

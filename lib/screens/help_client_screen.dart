@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/l10n/app_localizations.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
 
 class HelpClientScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class HelpClientScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
-        title: const Text('Hướng dẫn'),
+        title: Text(context.l10n.get('help')),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: GestureDetector(
@@ -46,7 +47,7 @@ class HelpClientScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.qr_code_scanner, color: Colors.white, size: 48),
                     SizedBox(width: 16),
@@ -54,7 +55,7 @@ class HelpClientScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'QR Scanner',
                             style: TextStyle(
                               color: Colors.white,
@@ -62,10 +63,10 @@ class HelpClientScreen extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'Quét và tạo mã QR / Barcode dễ dàng',
-                            style: TextStyle(
+                            context.l10n.get('app_desc'),
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
                             ),
@@ -78,78 +79,72 @@ class HelpClientScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 24),
-              _SectionTitle(title: 'Các tính năng chính'),
+              _SectionTitle(title: context.l10n.get('main_features')),
               const SizedBox(height: 12),
 
               _HelpCard(
                 icon: Icons.flash_on_rounded,
                 iconColor: context.colors.warning,
-                title: 'Đèn Flash',
-                description:
-                    'Bật/tắt đèn flash của camera để quét trong bóng tối.',
+                title: context.l10n.get('flashlight'),
+                description: context.l10n.get('flashlight_desc'),
               ),
               _HelpCard(
                 icon: Icons.photo_library_rounded,
                 iconColor: context.colors.accentBlue,
-                title: 'Thư viện ảnh',
-                description: 'Chọn ảnh từ gallery để quét mã QR hoặc Barcode.',
+                title: context.l10n.get('photo_library'),
+                description: context.l10n.get('photo_library_desc'),
               ),
               _HelpCard(
                 icon: Icons.cameraswitch_rounded,
                 iconColor: context.colors.accentCyan,
-                title: 'Chuyển camera',
-                description: 'Chuyển đổi giữa camera trước và sau.',
+                title: context.l10n.get('switch_camera'),
+                description: context.l10n.get('switch_camera_desc'),
               ),
               _HelpCard(
                 icon: Icons.pinch_rounded,
                 iconColor: context.colors.accentPurple,
-                title: 'Pinch to Zoom',
-                description: 'Dùng 2 ngón tay để phóng to hoặc thu nhỏ camera.',
+                title: context.l10n.get('pinch_zoom'),
+                description: context.l10n.get('pinch_zoom_desc'),
               ),
 
               const SizedBox(height: 20),
-              _SectionTitle(title: 'Cài đặt'),
+              _SectionTitle(title: context.l10n.get('settings')),
               const SizedBox(height: 12),
 
               _HelpCard(
                 icon: Icons.history_rounded,
                 iconColor: context.colors.accentBlue,
-                title: 'Lịch sử quét',
-                description:
-                    'Xem lại tất cả mã QR và Barcode đã quét. Nhấn để sao chép, vuốt sang trái để xóa.',
+                title: context.l10n.get('scan_history'),
+                description: context.l10n.get('scan_history_desc'),
               ),
               _HelpCard(
                 icon: Icons.open_in_browser_rounded,
                 iconColor: context.colors.accentCyan,
-                title: 'Tự động mở liên kết',
-                description:
-                    'Khi bật, app sẽ tự động mở trình duyệt nếu quét được URL (http/https).',
+                title: context.l10n.get('auto_open_url'),
+                description: context.l10n.get('auto_open_url_desc'),
               ),
               _HelpCard(
                 icon: Icons.brightness_6_rounded,
                 iconColor: context.colors.warning,
-                title: 'Giao diện',
-                description:
-                    'Chuyển đổi linh hoạt giữa chế độ Sáng và Tối tùy theo sở thích và môi trường.',
+                title: context.l10n.get('theme'),
+                description: context.l10n.get('theme_desc'),
               ),
               _HelpCard(
                 icon: Icons.crop_free_rounded,
                 iconColor: context.colors.accentPurple,
-                title: 'Bật khung quét',
-                description:
-                    'Khi bật, hiển thị khung hình vuông để căn mã QR vào vùng quét chính xác hơn.',
+                title: context.l10n.get('enable_scan_frame'),
+                description: context.l10n.get('enable_scan_frame_desc'),
               ),
 
               const SizedBox(height: 20),
-              _SectionTitle(title: 'Tạo mã'),
+              _SectionTitle(title: context.l10n.get('create_code')),
               const SizedBox(height: 12),
 
               _HelpCard(
                 icon: Icons.add_box_outlined,
                 iconColor: context.colors.accentPurple,
-                title: 'Tạo QR / Barcode',
-                description:
-                    'Nhập URL, văn bản hoặc số rồi chọn loại mã. Hỗ trợ QR Code, Aztec, PDF417, EAN, Code128 và nhiều định dạng khác. Lưu ảnh về máy.',
+                title: context.l10n.get('create_qr_barcode'),
+                description: context.l10n.get('create_qr_barcode_desc'),
               ),
 
               const SizedBox(height: 32),
@@ -165,7 +160,7 @@ class HelpClientScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Phát triển bởi',
+                      context.l10n.get('developed_by'),
                       style: AppTextStyles.labelSmall,
                     ),
                     SizedBox(height: 4),
