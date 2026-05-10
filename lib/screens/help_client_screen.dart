@@ -130,6 +130,12 @@ class HelpClientScreen extends StatelessWidget {
                 description: context.l10n.get('theme_desc'),
               ),
               _HelpCard(
+                icon: Icons.language_rounded,
+                iconColor: context.colors.accentBlue,
+                title: context.l10n.get('language'),
+                description: context.l10n.get('language_desc'),
+              ),
+              _HelpCard(
                 icon: Icons.crop_free_rounded,
                 iconColor: context.colors.accentPurple,
                 title: context.l10n.get('enable_scan_frame'),
@@ -174,7 +180,7 @@ class HelpClientScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Version 1.3.0',
+                      'Version 1.4.0',
                       style: AppTextStyles.labelSmall,
                     ),
                   ],

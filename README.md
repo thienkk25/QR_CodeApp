@@ -35,4 +35,9 @@ Complete UI/UX redesign — modern dark theme with premium glassmorphism effects
 10. **Responsive**: Scan window size adapts to screen width (`clamp(200, 300)`). Tested on Android, iOS, Web, Desktop.
 11. **Page Transitions**: Custom `SlideTransition + FadeTransition` on navigation.
 
+**Version 1.4.0:**
+1. **Multi-language Support**: Fully localized the application with instant switching between English (en) and Vietnamese (vi).
+2. **Dynamic Theming Support**: Added Light/Dark mode toggling from the settings menu with robust state persistence.
+3. **State Management**: Upgraded global application states using `ValueNotifier` for both Locale and Theme switching without restarting the app.
+
 12. MIT © by ThienNguyen
