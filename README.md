@@ -40,4 +40,4 @@ Complete UI/UX redesign — modern dark theme with premium glassmorphism effects
 2. **Dynamic Theming Support**: Added Light/Dark mode toggling from the settings menu with robust state persistence.
 3. **State Management**: Upgraded global application states using `ValueNotifier` for both Locale and Theme switching without restarting the app.
 
-12. MIT © by ThienNguyen
+MIT © by ThienNguyen
