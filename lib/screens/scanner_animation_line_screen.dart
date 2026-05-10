@@ -48,24 +48,24 @@ class _ScannerAnimationLineScreenState extends State<ScannerAnimationLineScreen>
         width: double.infinity,
         height: 3,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             colors: [
               Colors.transparent,
-              AppColors.accentBlue,
-              AppColors.accentPurple,
-              AppColors.accentBlue,
+              context.colors.accentBlue,
+              context.colors.accentPurple,
+              context.colors.accentBlue,
               Colors.transparent,
             ],
           ),
           borderRadius: BorderRadius.circular(2),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accentPurple.withAlpha(200),
+              color: context.colors.accentPurple.withAlpha(200),
               blurRadius: 18,
               spreadRadius: 4,
             ),
             BoxShadow(
-              color: AppColors.accentCyan.withAlpha(120),
+              color: context.colors.accentCyan.withAlpha(120),
               blurRadius: 30,
               spreadRadius: 2,
             ),

@@ -70,7 +70,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: AppColors.success, size: 18),
+            Icon(Icons.check_circle, color: context.colors.success, size: 18),
             const SizedBox(width: 8),
             const Text('Đã sao chép vào clipboard!'),
           ],
@@ -97,12 +97,12 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
       child: Container(
         margin: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.bgCardSolid,
+          color: context.colors.bgCardSolid,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.glassBorder, width: 1),
+          border: Border.all(color: context.colors.glassBorder, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accentPurple.withAlpha(40),
+              color: context.colors.accentPurple.withAlpha(40),
               blurRadius: 40,
               spreadRadius: 0,
             ),
@@ -123,7 +123,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: AppColors.textMuted,
+                      color: context.colors.textMuted,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -137,7 +137,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                       height: 42,
                       decoration: BoxDecoration(
                         gradient: isUrl
-                            ? AppColors.accentGradient
+                            ? context.colors.accentGradient
                             : const LinearGradient(
                                 colors: [Color(0xFF4A4A6A), Color(0xFF2A2A4A)],
                               ),
@@ -173,14 +173,14 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: AppColors.bgSurface,
+                          color: context.colors.bgSurface,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.glassBorder),
+                          border: Border.all(color: context.colors.glassBorder),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
                           size: 16,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
@@ -195,10 +195,10 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                     padding:
                         const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      color: AppColors.accentPurple.withAlpha(25),
+                      color: context.colors.accentPurple.withAlpha(25),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: AppColors.accentPurple.withAlpha(80)),
+                          color: context.colors.accentPurple.withAlpha(80)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -206,8 +206,8 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
+                          decoration: BoxDecoration(
+                            color: context.colors.success,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -215,7 +215,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                         Text(
                           domain,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.accentPurple,
+                            color: context.colors.accentPurple,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -231,9 +231,9 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                   constraints: const BoxConstraints(maxHeight: 120),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.bgSurface,
+                    color: context.colors.bgSurface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.glassBorder),
+                    border: Border.all(color: context.colors.glassBorder),
                   ),
                   child: SingleChildScrollView(
                     child: Text(
@@ -259,7 +259,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                             : Icons.copy_rounded,
                         label: _copied ? 'Đã sao chép' : 'Sao chép',
                         onTap: () => _copyToClipboard(context),
-                        color: _copied ? AppColors.success : AppColors.textSecondary,
+                        color: _copied ? context.colors.success : context.colors.textSecondary,
                         filled: false,
                       ),
                     ),
@@ -270,7 +270,7 @@ class _ScanResultSheetState extends State<_ScanResultSheet>
                           icon: Icons.open_in_browser_rounded,
                           label: 'Mở liên kết',
                           onTap: _openUrl,
-                          color: AppColors.accentPurple,
+                          color: context.colors.accentPurple,
                           filled: true,
                         ),
                       ),
@@ -309,9 +309,9 @@ class _ActionBtn extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 13),
         decoration: BoxDecoration(
-          color: filled ? color : AppColors.bgSurface,
+          color: filled ? color : context.colors.bgSurface,
           borderRadius: BorderRadius.circular(12),
-          border: filled ? null : Border.all(color: AppColors.glassBorder),
+          border: filled ? null : Border.all(color: context.colors.glassBorder),
           boxShadow: filled
               ? [
                   BoxShadow(

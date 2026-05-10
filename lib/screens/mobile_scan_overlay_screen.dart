@@ -119,14 +119,14 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.bgCardSolid.withAlpha(200),
+                    color: context.colors.bgCardSolid.withAlpha(200),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     value.error?.errorDetails?.message ??
                         'Đang khởi tạo máy quét...',
-                    style: const TextStyle(
-                        color: AppColors.textPrimary, fontSize: 15),
+                    style: TextStyle(
+                        color: context.colors.textPrimary, fontSize: 15),
                   ),
                 ),
               );
@@ -164,14 +164,14 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.bgCardSolid.withAlpha(180),
+                color: context.colors.bgCardSolid.withAlpha(180),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: context.colors.glassBorder),
               ),
-              child: const Text(
+              child: Text(
                 'Hướng camera vào mã QR / Barcode',
                 style: TextStyle(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -193,27 +193,30 @@ class _ScanFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: _FramePainter(),
+      painter: _FramePainter(context.colors),
     );
   }
 }
 
 class _FramePainter extends CustomPainter {
+  final AppThemeColors colors;
+  _FramePainter(this.colors);
+
   @override
   void paint(Canvas canvas, Size size) {
     const cornerLen = 36.0;
     const strokeW = 4.0;
 
     final glowPaint = Paint()
-      ..color = AppColors.accentPurple.withAlpha(100)
+      ..color = colors.accentPurple.withAlpha(100)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeW + 8
       ..strokeCap = StrokeCap.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
     final cornerPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [AppColors.accentPurple, AppColors.accentCyan],
+      ..shader = LinearGradient(
+        colors: [colors.accentPurple, colors.accentCyan],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeW

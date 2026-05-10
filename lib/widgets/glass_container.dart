@@ -40,10 +40,10 @@ class GlassContainer extends StatelessWidget {
           height: height,
           padding: padding ?? const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: color ?? AppColors.glassFill,
+            color: color ?? context.colors.glassFill,
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: borderColor ?? AppColors.glassBorder,
+              color: borderColor ?? context.colors.glassBorder,
               width: 1,
             ),
           ),
@@ -126,11 +126,11 @@ class _GradientButtonState extends State<GradientButton>
           height: widget.height,
           padding: widget.padding,
           decoration: BoxDecoration(
-            gradient: widget.gradient ?? AppColors.accentGradient,
+            gradient: widget.gradient ?? context.colors.accentGradient,
             borderRadius: BorderRadius.circular(widget.borderRadius),
             boxShadow: [
               BoxShadow(
-                color: AppColors.accentPurple.withAlpha(80),
+                color: context.colors.accentPurple.withAlpha(80),
                 blurRadius: 20,
                 spreadRadius: 0,
                 offset: const Offset(0, 6),
@@ -206,13 +206,13 @@ class _GlassIconButtonState extends State<GlassIconButton>
               width: widget.size,
               height: widget.size,
               decoration: BoxDecoration(
-                color: AppColors.glassBlur,
+                color: context.colors.glassBlur,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorder, width: 1),
+                border: Border.all(color: context.colors.glassBorder, width: 1),
               ),
               child: Icon(
                 widget.icon,
-                color: widget.iconColor ?? AppColors.textPrimary,
+                color: widget.iconColor ?? context.colors.textPrimary,
                 size: widget.size * 0.45,
               ),
             ),

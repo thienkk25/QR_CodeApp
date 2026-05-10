@@ -15,8 +15,8 @@ import 'package:qr_code_app/models/scan_history_model.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/widgets/custom_result_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_code_app/main.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 class ScanQrScreen extends StatefulWidget {
   const ScanQrScreen({super.key});
 
@@ -31,6 +31,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   bool isFlashOn = false;
   bool isScanned = false;
   late bool isAutoOpenLink;
+  late bool isDarkMode;
   // Zoom — giá trị thực tế 1.0=normal .. 5.0=max
   double _zoomFactor = 1.0;
   double _baseZoomFactor = 1.0;
@@ -68,10 +69,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool? getAutoOpenLink = prefs.getBool('isAutoOpenLink');
     final bool? getScanMode = prefs.getBool('isScanMode');
+    final bool? getDarkMode = prefs.getBool('isDarkMode');
 
     setState(() {
       isAutoOpenLink = getAutoOpenLink ?? false;
       isScanMode = getScanMode ?? false;
+      isDarkMode = getDarkMode ?? true;
       isLoading = false;
     });
   }
@@ -150,7 +153,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   // ── Loading Screen ──────────────────────────────────────
   Widget _buildLoadingScreen() {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -159,11 +162,11 @@ class _ScanQrScreenState extends State<ScanQrScreen>
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                gradient: AppColors.accentGradient,
+                gradient: context.colors.accentGradient,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentPurple.withAlpha(100),
+                    color: context.colors.accentPurple.withAlpha(100),
                     blurRadius: 30,
                     spreadRadius: 5,
                   ),
@@ -173,12 +176,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                   color: Colors.white, size: 40),
             ),
             const SizedBox(height: 24),
-            const SizedBox(
+            SizedBox(
               width: 32,
               height: 32,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: AppColors.accentPurple,
+                color: context.colors.accentPurple,
               ),
             ),
             const SizedBox(height: 16),
@@ -215,18 +218,25 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                   child: Container(
                     height: double.infinity,
                     width: MediaQuery.of(context).size.width * 0.82,
-                    decoration: const BoxDecoration(
-                      color: AppColors.bgCardSolid,
-                      borderRadius: BorderRadius.horizontal(
+                    decoration: BoxDecoration(
+                      color: context.colors.bgCardSolid,
+                      borderRadius: const BorderRadius.horizontal(
                         left: Radius.circular(24),
                       ),
                       border: Border(
-                        left: BorderSide(color: AppColors.glassBorder),
+                        left: BorderSide(color: context.colors.glassBorder),
                       ),
                     ),
                     child: _SettingsPanel(
                       isAutoOpenLink: isAutoOpenLink,
                       isScanMode: isScanMode,
+                      isDarkMode: isDarkMode,
+                      onDarkModeChanged: (v) async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('isDarkMode', v);
+                        themeNotifier.value = v ? ThemeMode.dark : ThemeMode.light;
+                        setState(() => isDarkMode = v);
+                      },
                       onAutoOpenLinkChanged: (v) async {
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('isAutoOpenLink', v);
@@ -288,7 +298,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     if (isLoading) return _buildLoadingScreen();
 
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       extendBodyBehindAppBar: true,
       appBar: _buildAppBar(),
       body: GestureDetector(
@@ -341,12 +351,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.bgDeep.withAlpha(220),
-                  AppColors.bgDeep.withAlpha(100),
+                  context.colors.bgDeep.withAlpha(220),
+                  context.colors.bgDeep.withAlpha(100),
                 ],
               ),
-              border: const Border(
-                bottom: BorderSide(color: AppColors.glassBorder),
+              border: Border(
+                bottom: BorderSide(color: context.colors.glassBorder),
               ),
             ),
             child: SafeArea(
@@ -372,7 +382,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                     // Title with gradient
                     ShaderMask(
                       shaderCallback: (bounds) =>
-                          AppColors.accentGradientH.createShader(bounds),
+                          context.colors.accentGradientH.createShader(bounds),
                       child: const Text(
                         'QR Scanner',
                         style: TextStyle(
@@ -412,12 +422,12 @@ class _ScanQrScreenState extends State<ScanQrScreen>
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                AppColors.bgDeep.withAlpha(230),
-                AppColors.bgDeep.withAlpha(120),
+                context.colors.bgDeep.withAlpha(230),
+                context.colors.bgDeep.withAlpha(120),
               ],
             ),
-            border: const Border(
-              top: BorderSide(color: AppColors.glassBorder),
+            border: Border(
+              top: BorderSide(color: context.colors.glassBorder),
             ),
           ),
           child: SafeArea(
@@ -434,8 +444,8 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                           : Icons.flash_off_rounded,
                       label: isFlashOn ? 'Đèn bật' : 'Đèn tắt',
                       color: isFlashOn
-                          ? AppColors.warning
-                          : AppColors.textSecondary,
+                          ? context.colors.warning
+                          : context.colors.textSecondary,
                       isActive: isFlashOn,
                       onTap: () {
                         controller?.toggleTorch();
@@ -449,7 +459,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 _BottomBtn(
                   icon: Icons.photo_library_rounded,
                   label: 'Thư viện',
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   onTap: _pickFromGallery,
                 ),
 
@@ -457,7 +467,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                 _BottomBtn(
                   icon: Icons.cameraswitch_rounded,
                   label: 'Đổi camera',
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   onTap: () => controller?.switchCamera(),
                 ),
               ],
@@ -565,11 +575,11 @@ class _AppBarBtn extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.glassBlur,
+            color: context.colors.glassBlur,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: context.colors.glassBorder),
           ),
-          child: Icon(icon, size: 20, color: AppColors.textPrimary),
+          child: Icon(icon, size: 20, color: context.colors.textPrimary),
         ),
       ),
     );
@@ -628,16 +638,20 @@ class _BottomBtn extends StatelessWidget {
 class _SettingsPanel extends StatefulWidget {
   final bool isAutoOpenLink;
   final bool isScanMode;
+  final bool isDarkMode;
   final ValueChanged<bool> onAutoOpenLinkChanged;
   final ValueChanged<bool> onScanModeChanged;
+  final ValueChanged<bool> onDarkModeChanged;
   final VoidCallback onHistoryTap;
   final VoidCallback onHelpTap;
 
   const _SettingsPanel({
     required this.isAutoOpenLink,
     required this.isScanMode,
+    required this.isDarkMode,
     required this.onAutoOpenLinkChanged,
     required this.onScanModeChanged,
+    required this.onDarkModeChanged,
     required this.onHistoryTap,
     required this.onHelpTap,
   });
@@ -649,12 +663,14 @@ class _SettingsPanel extends StatefulWidget {
 class _SettingsPanelState extends State<_SettingsPanel> {
   late bool _autoOpen;
   late bool _scanMode;
+  late bool _isDarkMode;
 
   @override
   void initState() {
     super.initState();
     _autoOpen = widget.isAutoOpenLink;
     _scanMode = widget.isScanMode;
+    _isDarkMode = widget.isDarkMode;
   }
 
   @override
@@ -671,7 +687,7 @@ class _SettingsPanelState extends State<_SettingsPanel> {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  gradient: context.colors.accentGradient,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.tune_rounded,
@@ -686,18 +702,18 @@ class _SettingsPanelState extends State<_SettingsPanel> {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppColors.bgSurface,
+                    color: context.colors.bgSurface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.glassBorder),
+                    border: Border.all(color: context.colors.glassBorder),
                   ),
-                  child: const Icon(Icons.close,
-                      size: 16, color: AppColors.textSecondary),
+                  child: Icon(Icons.close,
+                      size: 16, color: context.colors.textSecondary),
                 ),
               ),
             ],
           ),
         ),
-        const Divider(color: AppColors.glassBorder, height: 1),
+        Divider(color: context.colors.glassBorder, height: 1),
 
         Expanded(
           child: ListView(
@@ -706,15 +722,15 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               // History
               _SettingsTile(
                 icon: Icons.history_rounded,
-                iconColor: AppColors.accentBlue,
+                iconColor: context.colors.accentBlue,
                 title: 'Lịch sử quét',
                 subtitle: 'Xem lại các mã đã quét',
                 onTap: () {
                   Navigator.pop(context);
                   widget.onHistoryTap();
                 },
-                trailing: const Icon(Icons.chevron_right,
-                    color: AppColors.textMuted, size: 20),
+                trailing: Icon(Icons.chevron_right,
+                    color: context.colors.textMuted, size: 20),
               ),
 
               const SizedBox(height: 8),
@@ -727,7 +743,7 @@ class _SettingsPanelState extends State<_SettingsPanel> {
               // Auto open link
               _SettingsTile(
                 icon: Icons.open_in_browser_rounded,
-                iconColor: AppColors.accentCyan,
+                iconColor: context.colors.accentCyan,
                 title: 'Tự động mở liên kết',
                 subtitle: 'Mở trình duyệt khi quét URL',
                 trailing: Switch(
@@ -739,10 +755,25 @@ class _SettingsPanelState extends State<_SettingsPanel> {
                 ),
               ),
 
+              // Dark mode toggle
+              _SettingsTile(
+                icon: _isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                iconColor: _isDarkMode ? context.colors.accentBlue : context.colors.warning,
+                title: 'Giao diện',
+                subtitle: _isDarkMode ? 'Chế độ tối' : 'Chế độ sáng',
+                trailing: Switch(
+                  value: _isDarkMode,
+                  onChanged: (v) {
+                    setState(() => _isDarkMode = v);
+                    widget.onDarkModeChanged(v);
+                  },
+                ),
+              ),
+
               // Scan frame toggle
               _SettingsTile(
                 icon: Icons.crop_free_rounded,
-                iconColor: AppColors.accentPurple,
+                iconColor: context.colors.accentPurple,
                 title: 'Bật khung quét',
                 subtitle: 'Hiển thị khung QR scanner',
                 trailing: Switch(
@@ -754,21 +785,21 @@ class _SettingsPanelState extends State<_SettingsPanel> {
                 ),
               ),
 
-              const Divider(
-                  color: AppColors.glassBorder, height: 24, indent: 20),
+              Divider(
+                  color: context.colors.glassBorder, height: 24, indent: 20),
 
               // Help
               _SettingsTile(
                 icon: Icons.help_outline_rounded,
-                iconColor: AppColors.textSecondary,
+                iconColor: context.colors.textSecondary,
                 title: 'Hướng dẫn',
                 subtitle: 'Hướng dẫn sử dụng ứng dụng',
                 onTap: () {
                   Navigator.pop(context);
                   widget.onHelpTap();
                 },
-                trailing: const Icon(Icons.chevron_right,
-                    color: AppColors.textMuted, size: 20),
+                trailing: Icon(Icons.chevron_right,
+                    color: context.colors.textMuted, size: 20),
               ),
             ],
           ),

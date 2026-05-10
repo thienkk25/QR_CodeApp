@@ -16,18 +16,25 @@ Future<void> main() async {
   runApp(const MainApp());
 }
 
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'QR Scanner',
-      darkTheme: AppTheme.dark,
-      theme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
-      debugShowCheckedModeBanner: false,
-      home: const ScanQrScreen(),
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'QR Scanner',
+          darkTheme: AppTheme.dark,
+          theme: AppTheme.light,
+          themeMode: currentMode,
+          debugShowCheckedModeBanner: false,
+          home: const ScanQrScreen(),
+        );
+      },
     );
   }
 }

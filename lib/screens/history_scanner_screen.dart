@@ -29,7 +29,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            style: TextButton.styleFrom(foregroundColor: context.colors.error),
             child: const Text('Xóa hết'),
           ),
         ],
@@ -48,7 +48,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       body: ValueListenableBuilder(
         valueListenable: box.listenable(),
         builder: (context, value, child) {
@@ -81,7 +81,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
 
   Widget _buildEmptyState() {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
         title: const Text('Lịch sử quét'),
         backgroundColor: Colors.transparent,
@@ -95,14 +95,14 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
               width: 90,
               height: 90,
               decoration: BoxDecoration(
-                color: AppColors.bgCardSolid,
+                color: context.colors.bgCardSolid,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.glassBorder),
+                border: Border.all(color: context.colors.glassBorder),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.history_rounded,
                 size: 42,
-                color: AppColors.textMuted,
+                color: context.colors.textMuted,
               ),
             ),
             const SizedBox(height: 20),
@@ -120,7 +120,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
 
   SliverAppBar _buildSliverAppBar() {
     return SliverAppBar(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       elevation: 0,
       pinned: true,
       floating: true,
@@ -134,15 +134,15 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.accentPurple.withAlpha(25),
+              color: context.colors.accentPurple.withAlpha(25),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.accentPurple.withAlpha(60)),
+              border: Border.all(color: context.colors.accentPurple.withAlpha(60)),
             ),
             child: Text(
               '${box.length}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.accentPurple,
+                color: context.colors.accentPurple,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -156,13 +156,13 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
             width: 34,
             height: 34,
             decoration: BoxDecoration(
-              color: AppColors.error.withAlpha(18),
+              color: context.colors.error.withAlpha(18),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.error.withAlpha(50)),
+              border: Border.all(color: context.colors.error.withAlpha(50)),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.delete_sweep_rounded,
-              color: AppColors.error,
+              color: context.colors.error,
               size: 18,
             ),
           ),
@@ -172,7 +172,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: AppColors.glassBorder),
+        child: Container(height: 1, color: context.colors.glassBorder),
       ),
     );
   }
@@ -188,21 +188,21 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
       background: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: AppColors.error.withAlpha(25),
+          color: context.colors.error.withAlpha(25),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.error.withAlpha(70)),
+          border: Border.all(color: context.colors.error.withAlpha(70)),
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.delete_rounded, color: AppColors.error, size: 22),
+            Icon(Icons.delete_rounded, color: context.colors.error, size: 22),
             const SizedBox(height: 4),
             Text(
               'Xóa',
               style: TextStyle(
-                color: AppColors.error,
+                color: context.colors.error,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -221,9 +221,9 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
-            color: AppColors.bgCardSolid,
+            color: context.colors.bgCardSolid,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.glassBorder),
+            border: Border.all(color: context.colors.glassBorder),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -240,21 +240,21 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                       height: 34,
                       decoration: BoxDecoration(
                         color: isUrl
-                            ? AppColors.accentPurple.withAlpha(25)
-                            : AppColors.bgSurface,
+                            ? context.colors.accentPurple.withAlpha(25)
+                            : context.colors.bgSurface,
                         borderRadius: BorderRadius.circular(9),
                         border: Border.all(
                           color: isUrl
-                              ? AppColors.accentPurple.withAlpha(55)
-                              : AppColors.glassBorder,
+                              ? context.colors.accentPurple.withAlpha(55)
+                              : context.colors.glassBorder,
                         ),
                       ),
                       child: Icon(
                         isUrl ? Icons.link_rounded : Icons.qr_code_rounded,
                         size: 17,
                         color: isUrl
-                            ? AppColors.accentPurple
-                            : AppColors.textSecondary,
+                            ? context.colors.accentPurple
+                            : context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -267,8 +267,8 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                             : (isUrl ? 'URL' : 'Văn bản'),
                         style: AppTextStyles.labelSmall.copyWith(
                           color: isUrl
-                              ? AppColors.accentPurple
-                              : AppColors.textMuted,
+                              ? context.colors.accentPurple
+                              : context.colors.textMuted,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.3,
                         ),
@@ -291,22 +291,22 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.accentBlue.withAlpha(20),
+                            color: context.colors.accentBlue.withAlpha(20),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                                color: AppColors.accentBlue.withAlpha(55)),
+                                color: context.colors.accentBlue.withAlpha(55)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.open_in_new_rounded,
-                                  size: 12, color: AppColors.accentBlue),
+                                  size: 12, color: context.colors.accentBlue),
                               const SizedBox(width: 4),
                               Text(
                                 'Mở',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.accentBlue,
+                                  color: context.colors.accentBlue,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -318,7 +318,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                     // Copy hint (non-URL)
                     if (!isUrl)
                       Icon(Icons.copy_rounded,
-                          size: 14, color: AppColors.textMuted),
+                          size: 14, color: context.colors.textMuted),
                   ],
                 ),
 
@@ -337,8 +337,8 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                 // ── Timestamp ──
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded,
-                        size: 11, color: AppColors.textMuted),
+                    Icon(Icons.access_time_rounded,
+                        size: 11, color: context.colors.textMuted),
                     const SizedBox(width: 4),
                     Text(
                       FormatTime()
@@ -349,7 +349,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                     Text(
                       'Nhấn để sao chép',
                       style: AppTextStyles.labelSmall
-                          .copyWith(color: AppColors.textMuted.withAlpha(130)),
+                          .copyWith(color: context.colors.textMuted.withAlpha(130)),
                     ),
                   ],
                 ),

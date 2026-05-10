@@ -127,8 +127,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.check_circle,
-                  color: AppColors.success, size: 18),
+              Icon(Icons.check_circle,
+                  color: context.colors.success, size: 18),
               const SizedBox(width: 8),
               Expanded(child: Text('Đã lưu: ${file.path}')),
             ],
@@ -141,7 +141,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.error_rounded, color: AppColors.error, size: 18),
+              Icon(Icons.error_rounded, color: context.colors.error, size: 18),
               const SizedBox(width: 8),
               Expanded(child: Text('Lỗi: $e')),
             ],
@@ -156,7 +156,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
     final hasContent = textController.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
         title: const Text('Tạo mã QR / Barcode'),
         backgroundColor: Colors.transparent,
@@ -166,12 +166,12 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.bgCardSolid,
+              color: context.colors.bgCardSolid,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.colors.glassBorder),
             ),
-            child: const Icon(Icons.arrow_back_rounded,
-                color: AppColors.textPrimary, size: 20),
+            child: Icon(Icons.arrow_back_rounded,
+                color: context.colors.textPrimary, size: 20),
           ),
         ),
       ),
@@ -185,13 +185,13 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
             const SizedBox(height: 8),
             TextField(
               controller: textController,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: const InputDecoration(
+              style: TextStyle(color: context.colors.textPrimary),
+              decoration: InputDecoration(
                 hintText: 'Nhập URL, văn bản, số điện thoại...',
                 prefixIcon: Icon(Icons.edit_rounded,
-                    color: AppColors.textMuted, size: 20),
+                    color: context.colors.textMuted, size: 20),
               ),
-              cursorColor: AppColors.accentPurple,
+              cursorColor: context.colors.accentPurple,
               onChanged: _onTextChanged,
               maxLines: 3,
               minLines: 1,
@@ -206,31 +206,31 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
             DropdownButtonFormField<String>(
               initialValue: selectedType,
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.qr_code_2_rounded,
-                    color: AppColors.textMuted, size: 20),
+                prefixIcon: Icon(Icons.qr_code_2_rounded,
+                    color: context.colors.textMuted, size: 20),
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 filled: true,
-                fillColor: AppColors.bgCardSolid,
+                fillColor: context.colors.bgCardSolid,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.glassBorder),
+                  borderSide: BorderSide(color: context.colors.glassBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.glassBorder),
+                  borderSide: BorderSide(color: context.colors.glassBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide:
-                      const BorderSide(color: AppColors.accentPurple, width: 2),
+                      BorderSide(color: context.colors.accentPurple, width: 2),
                 ),
               ),
-              dropdownColor: AppColors.bgCardSolid,
-              icon: const Icon(Icons.expand_more_rounded,
-                  color: AppColors.textSecondary),
-              style: const TextStyle(
-                  color: AppColors.textPrimary,
+              dropdownColor: context.colors.bgCardSolid,
+              icon: Icon(Icons.expand_more_rounded,
+                  color: context.colors.textSecondary),
+              style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.w500),
               items: barcodeTypes.keys
@@ -260,7 +260,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.accentPurple.withAlpha(60),
+                                  color: context.colors.accentPurple.withAlpha(60),
                                   blurRadius: 30,
                                   spreadRadius: 2,
                                 ),
@@ -288,8 +288,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                                     alignment: Alignment.center,
                                     child: Text(
                                       error,
-                                      style: const TextStyle(
-                                          color: AppColors.error, fontSize: 13),
+                                      style: TextStyle(
+                                          color: context.colors.error, fontSize: 13),
                                     ),
                                   ),
                                 ),
@@ -338,12 +338,12 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.bgCardSolid,
+                        color: context.colors.bgCardSolid,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.glassBorder),
+                        border: Border.all(color: context.colors.glassBorder),
                       ),
-                      child: const Icon(Icons.qr_code_2_rounded,
-                          size: 38, color: AppColors.textMuted),
+                      child: Icon(Icons.qr_code_2_rounded,
+                          size: 38, color: context.colors.textMuted),
                     ),
                     const SizedBox(height: 16),
                     const Text(

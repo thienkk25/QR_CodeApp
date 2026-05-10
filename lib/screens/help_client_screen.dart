@@ -7,7 +7,7 @@ class HelpClientScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: context.colors.bgDeep,
       appBar: AppBar(
         title: const Text('Hướng dẫn'),
         backgroundColor: Colors.transparent,
@@ -17,12 +17,12 @@ class HelpClientScreen extends StatelessWidget {
           child: Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.bgCardSolid,
+              color: context.colors.bgCardSolid,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.glassBorder),
+              border: Border.all(color: context.colors.glassBorder),
             ),
-            child: const Icon(Icons.arrow_back_rounded,
-                color: AppColors.textPrimary, size: 20),
+            child: Icon(Icons.arrow_back_rounded,
+                color: context.colors.textPrimary, size: 20),
           ),
         ),
       ),
@@ -36,11 +36,11 @@ class HelpClientScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  gradient: context.colors.accentGradient,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.accentPurple.withAlpha(80),
+                      color: context.colors.accentPurple.withAlpha(80),
                       blurRadius: 24,
                       offset: const Offset(0, 8),
                     ),
@@ -83,26 +83,26 @@ class HelpClientScreen extends StatelessWidget {
 
               _HelpCard(
                 icon: Icons.flash_on_rounded,
-                iconColor: AppColors.warning,
+                iconColor: context.colors.warning,
                 title: 'Đèn Flash',
                 description:
                     'Bật/tắt đèn flash của camera để quét trong bóng tối.',
               ),
               _HelpCard(
                 icon: Icons.photo_library_rounded,
-                iconColor: AppColors.accentBlue,
+                iconColor: context.colors.accentBlue,
                 title: 'Thư viện ảnh',
                 description: 'Chọn ảnh từ gallery để quét mã QR hoặc Barcode.',
               ),
               _HelpCard(
                 icon: Icons.cameraswitch_rounded,
-                iconColor: AppColors.accentCyan,
+                iconColor: context.colors.accentCyan,
                 title: 'Chuyển camera',
                 description: 'Chuyển đổi giữa camera trước và sau.',
               ),
               _HelpCard(
                 icon: Icons.pinch_rounded,
-                iconColor: AppColors.accentPurple,
+                iconColor: context.colors.accentPurple,
                 title: 'Pinch to Zoom',
                 description: 'Dùng 2 ngón tay để phóng to hoặc thu nhỏ camera.',
               ),
@@ -113,21 +113,28 @@ class HelpClientScreen extends StatelessWidget {
 
               _HelpCard(
                 icon: Icons.history_rounded,
-                iconColor: AppColors.accentBlue,
+                iconColor: context.colors.accentBlue,
                 title: 'Lịch sử quét',
                 description:
                     'Xem lại tất cả mã QR và Barcode đã quét. Nhấn để sao chép, vuốt sang trái để xóa.',
               ),
               _HelpCard(
                 icon: Icons.open_in_browser_rounded,
-                iconColor: AppColors.accentCyan,
+                iconColor: context.colors.accentCyan,
                 title: 'Tự động mở liên kết',
                 description:
                     'Khi bật, app sẽ tự động mở trình duyệt nếu quét được URL (http/https).',
               ),
               _HelpCard(
+                icon: Icons.brightness_6_rounded,
+                iconColor: context.colors.warning,
+                title: 'Giao diện',
+                description:
+                    'Chuyển đổi linh hoạt giữa chế độ Sáng và Tối tùy theo sở thích và môi trường.',
+              ),
+              _HelpCard(
                 icon: Icons.crop_free_rounded,
-                iconColor: AppColors.accentPurple,
+                iconColor: context.colors.accentPurple,
                 title: 'Bật khung quét',
                 description:
                     'Khi bật, hiển thị khung hình vuông để căn mã QR vào vùng quét chính xác hơn.',
@@ -139,7 +146,7 @@ class HelpClientScreen extends StatelessWidget {
 
               _HelpCard(
                 icon: Icons.add_box_outlined,
-                iconColor: AppColors.accentPurple,
+                iconColor: context.colors.accentPurple,
                 title: 'Tạo QR / Barcode',
                 description:
                     'Nhập URL, văn bản hoặc số rồi chọn loại mã. Hỗ trợ QR Code, Aztec, PDF417, EAN, Code128 và nhiều định dạng khác. Lưu ảnh về máy.',
@@ -151,11 +158,11 @@ class HelpClientScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.bgCardSolid,
+                  color: context.colors.bgCardSolid,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.glassBorder),
+                  border: Border.all(color: context.colors.glassBorder),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
                     Text(
                       'Phát triển bởi',
@@ -165,7 +172,7 @@ class HelpClientScreen extends StatelessWidget {
                     Text(
                       'Thiện Nguyễn',
                       style: TextStyle(
-                        color: AppColors.accentPurple,
+                        color: context.colors.accentPurple,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                       ),
@@ -200,7 +207,7 @@ class _SectionTitle extends StatelessWidget {
           width: 4,
           height: 18,
           decoration: BoxDecoration(
-            gradient: AppColors.accentGradient,
+            gradient: context.colors.accentGradient,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -233,9 +240,9 @@ class _HelpCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCardSolid,
+        color: context.colors.bgCardSolid,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(color: context.colors.glassBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
