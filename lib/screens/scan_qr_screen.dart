@@ -956,7 +956,7 @@ class _SettingsPanelState extends State<_SettingsPanel> {
         Container(
           padding: const EdgeInsets.all(20),
           child: const Text(
-            'QR Scanner  •  v1.4.0',
+            'QR Scanner  •  v1.5.0',
             style: AppTextStyles.labelSmall,
             textAlign: TextAlign.center,
           ),

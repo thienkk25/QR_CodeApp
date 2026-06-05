@@ -180,7 +180,7 @@ class HelpClientScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Version 1.4.0',
+                      'Version 1.5.0',
                       style: AppTextStyles.labelSmall,
                     ),
                   ],
