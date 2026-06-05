@@ -40,4 +40,14 @@ Complete UI/UX redesign — modern dark theme with premium glassmorphism effects
 2. **Dynamic Theming Support**: Added Light/Dark mode toggling from the settings menu with robust state persistence.
 3. **State Management**: Upgraded global application states using `ValueNotifier` for both Locale and Theme switching without restarting the app.
 
+**Version 1.5.0:**
+1. **Smart Wi-Fi Connection**: Integrated automatic Wi-Fi credential parsing (WPA/WEP/none) with one-click connect option directly from the scanning result panel.
+2. **Advanced History Filtering & UX**: Enhanced the History screen with query search, content-type filter chips (All, Link, Wi-Fi, Contact, Text), format badges, and quick-open sheet navigation.
+3. **Code Color Customization**: Added interactive color presets (Foreground & Background) during QR/Barcode generation to let users personalize generated barcodes.
+4. **Safe Multi-platform Downloads**: Resolved cross-platform image saving by integrating the `gal` library on Mobile/Tablet and custom conditional web download streams for Web deployments.
+5. **Crash-proof Controller Architecture**: Hardened camera controller bindings (`start`/`stop`/`torch`/`zoom`/`switch`) using safety exception wrappers to eliminate `controllerNotAttached` crashes during page transitions.
+6. **Smart Permission Recovery**: Guided users to Device Settings immediately when camera permissions are denied or permanently denied.
+7. **Refined Navigation & Alignment**: Balanced bottom navigation layout with symmetric fixed widths, centered labels, and complete English/Vietnamese localization.
+
 MIT © by ThienNguyen
+
