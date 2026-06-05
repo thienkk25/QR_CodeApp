@@ -235,16 +235,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
               GestureDetector(
                 onTap: () async {
                   final status = await Permission.camera.request();
-                  if (status.isPermanentlyDenied) {
-                    await openAppSettings();
-                  } else {
+                  if (status.isGranted || status.isLimited) {
                     setState(() {
-                      _hasCameraPermission =
-                          status.isGranted || status.isLimited;
+                      _hasCameraPermission = true;
                     });
-                    if (_hasCameraPermission) {
-                      await controller.start();
-                    }
+                    await _safeStartController();
+                  } else {
+                    await openAppSettings();
                   }
                 },
                 child: Container(
