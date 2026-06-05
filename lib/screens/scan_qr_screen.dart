@@ -532,7 +532,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                       icon: isFlashOn
                           ? Icons.flash_on_rounded
                           : Icons.flash_off_rounded,
-                      label: isFlashOn ? 'ON' : 'OFF',
+                      label: context.l10n.get('flashlight'),
                       color: isFlashOn
                           ? context.colors.warning
                           : context.colors.textSecondary,
@@ -711,7 +711,8 @@ class _BottomBtn extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        width: 100, // Cố định chiều rộng để 3 nút cân đối hoàn hảo
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? color.withAlpha(30) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
@@ -719,16 +720,21 @@ class _BottomBtn extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 24),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: color,
-                fontSize: 10,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

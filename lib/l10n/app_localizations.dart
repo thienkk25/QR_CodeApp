@@ -203,7 +203,7 @@ class AppLocalizations {
       'flashlight_desc': 'Bật/tắt đèn flash của camera để quét trong bóng tối.',
       'photo_library': 'Thư viện ảnh',
       'photo_library_desc': 'Chọn ảnh từ gallery để quét mã QR hoặc Barcode.',
-      'switch_camera': 'Chuyển camera',
+      'switch_camera': 'Đổi camera',
       'switch_camera_desc': 'Chuyển đổi giữa camera trước và sau.',
       'pinch_zoom': 'Pinch to Zoom',
       'pinch_zoom_desc': 'Dùng 2 ngón tay để phóng to hoặc thu nhỏ camera.',
