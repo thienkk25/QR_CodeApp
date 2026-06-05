@@ -5,10 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/widgets/glass_container.dart';
 import 'package:qr_code_app/l10n/app_localizations.dart';
+import 'package:gal/gal.dart';
+import 'package:qr_code_app/utils/web_downloader.dart';
 
 class CreateQrbarcodeScreen extends StatefulWidget {
   const CreateQrbarcodeScreen({super.key});
@@ -25,6 +26,9 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
   late AnimationController _previewAnim;
   late Animation<double> _previewFade;
   late Animation<Offset> _previewSlide;
+
+  Color qrColor = Colors.black;
+  Color qrBgColor = Colors.white;
 
   final barcodeTypes = {
     'QR Code': Barcode.qrCode(),
@@ -94,7 +98,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
   Future<void> savePng(BuildContext context) async {
     final widgetNotFoundMsg = context.l10n.get('widget_not_found');
     final cannotConvertPngMsg = context.l10n.get('cannot_convert_png');
-    final platformNotSupportedMsg = context.l10n.get('platform_not_supported');
+    final savedToGalleryMsg = context.l10n.get('saved_to_gallery');
     final desktopNotFoundMsg = context.l10n.get('desktop_not_found');
     final savedToMsg = context.l10n.get('saved_to');
     final errorPrefixMsg = context.l10n.get('error_prefix');
@@ -115,38 +119,58 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
 
       Uint8List pngBytes = byteData.buffer.asUint8List();
 
-      String path;
-      if (!kIsWeb && Platform.isAndroid) {
-        final dir = Directory('/storage/emulated/0/Pictures/ScanQR');
-        if (!dir.existsSync()) dir.createSync(recursive: true);
-        path = dir.path;
-      } else if (!kIsWeb && Platform.isIOS) {
-        final dir = await getApplicationDocumentsDirectory();
-        path = dir.path;
-      } else if (!kIsWeb &&
-          (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
-        path = await getDesktopPath(desktopNotFoundMsg);
-      } else {
-        throw UnsupportedError(platformNotSupportedMsg);
+      if (kIsWeb) {
+        downloadWebImage(pngBytes, 'qr_${DateTime.now().millisecondsSinceEpoch}.png');
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: context.colors.success, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(savedToGalleryMsg)),
+              ],
+            ),
+          ),
+        );
+        return;
       }
 
-      final file =
-          File('$path/qr_${DateTime.now().millisecondsSinceEpoch}.png');
-      await file.writeAsBytes(pngBytes);
-
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle, color: context.colors.success, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                  child: Text('$savedToMsg${file.path}')),
-            ],
+      if (Platform.isAndroid || Platform.isIOS) {
+        final hasAccess = await Gal.hasAccess();
+        if (!hasAccess) {
+          await Gal.requestAccess();
+        }
+        await Gal.putImageBytes(pngBytes, album: 'ScanQR');
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: context.colors.success, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text(savedToGalleryMsg)),
+              ],
+            ),
           ),
-        ),
-      );
+        );
+      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        final path = await getDesktopPath(desktopNotFoundMsg);
+        final file = File('$path/qr_${DateTime.now().millisecondsSinceEpoch}.png');
+        await file.writeAsBytes(pngBytes);
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: context.colors.success, size: 18),
+                const SizedBox(width: 8),
+                Expanded(child: Text('$savedToMsg${file.path}')),
+              ],
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -161,6 +185,46 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
         ),
       );
     }
+  }
+
+  Widget _buildColorIndicator(Color color, bool isForeground) {
+    final selectedColor = isForeground ? qrColor : qrBgColor;
+    final isSelected = selectedColor == color;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isForeground) {
+            qrColor = color;
+          } else {
+            qrBgColor = color;
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected
+                ? context.colors.accentPurple
+                : (color == Colors.white ? Colors.grey.shade400 : Colors.transparent),
+            width: isSelected ? 2.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: context.colors.accentPurple.withAlpha(80),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  )
+                ]
+              : null,
+        ),
+      ),
+    );
   }
 
   @override
@@ -251,6 +315,62 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
               onChanged: (v) => setState(() => selectedType = v!),
             ),
 
+            const SizedBox(height: 20),
+
+            _SectionLabel(label: context.l10n.get('color_customization')),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.l10n.get('foreground_color'), style: AppTextStyles.labelSmall.copyWith(fontSize: 11)),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 36,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          children: [
+                            _buildColorIndicator(Colors.black, true),
+                            _buildColorIndicator(const Color(0xFF6200EE), true),
+                            _buildColorIndicator(const Color(0xFF1B5E20), true),
+                            _buildColorIndicator(const Color(0xFFB71C1C), true),
+                            _buildColorIndicator(const Color(0xFF1A237E), true),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.l10n.get('background_color'), style: AppTextStyles.labelSmall.copyWith(fontSize: 11)),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 36,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          children: [
+                            _buildColorIndicator(Colors.white, false),
+                            _buildColorIndicator(const Color(0xFFF3E5F5), false),
+                            _buildColorIndicator(const Color(0xFFE8F5E9), false),
+                            _buildColorIndicator(const Color(0xFFFFFDE7), false),
+                            _buildColorIndicator(const Color(0xFFECEFF1), false),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 28),
 
             // ── Preview (animated) ───────────────────────
@@ -269,12 +389,12 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                           // Barcode card with glow
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: qrBgColor,
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      context.colors.accentPurple.withAlpha(60),
+                                      context.colors.accentPurple.withAlpha(40),
                                   blurRadius: 30,
                                   spreadRadius: 2,
                                 ),
@@ -284,7 +404,7 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                             child: RepaintBoundary(
                               key: globalKey,
                               child: Container(
-                                color: Colors.white,
+                                color: qrBgColor,
                                 padding: const EdgeInsets.all(12),
                                 child: BarcodeWidget(
                                   barcode: barcodeTypes[selectedType]!,
@@ -296,7 +416,8 @@ class _CreateQrbarcodeScreenState extends State<CreateQrbarcodeScreen>
                                           selectedType == 'PDF417'
                                       ? 220
                                       : 130,
-                                  color: Colors.black,
+                                  color: qrColor,
+                                  backgroundColor: qrBgColor,
                                   errorBuilder: (_, error) => Container(
                                     height: 80,
                                     alignment: Alignment.center,

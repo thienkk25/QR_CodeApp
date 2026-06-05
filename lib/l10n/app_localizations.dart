@@ -80,6 +80,9 @@ class AppLocalizations {
       'code_type_label': 'Code type',
       'preview_label': 'Preview',
       'enter_content_to_create': 'Enter content to create code',
+      'color_customization': 'QR / Barcode Color',
+      'foreground_color': 'Code Color (Foreground)',
+      'background_color': 'Background Color (Background)',
 
       // Help
       'main_features': 'Main Features',
@@ -111,6 +114,17 @@ class AppLocalizations {
       'open_link': 'Open link',
       'initializing_scanner': 'Initializing scanner...',
       'point_camera_at_qr_barcode': 'Point camera at QR / Barcode',
+      'connect_wifi': 'Connect to Wi-Fi',
+      'wifi_password': 'Password: ',
+      'wifi_connected': 'Connected successfully!',
+      'wifi_connect_failed': 'Connection failed',
+      'show_password': 'Show',
+      'hide_password': 'Hide',
+      'call': 'Call',
+      'send_sms': 'Send SMS',
+      'send_email': 'Send Email',
+      'open_maps': 'Open Maps',
+      'share_code': 'Share',
     },
     'vi': {
       // Main & Settings
@@ -179,6 +193,9 @@ class AppLocalizations {
       'code_type_label': 'Loại mã',
       'preview_label': 'Xem trước',
       'enter_content_to_create': 'Nhập nội dung để tạo mã',
+      'color_customization': 'Màu sắc mã QR/Barcode',
+      'foreground_color': 'Màu mã (Foreground)',
+      'background_color': 'Màu nền (Background)',
 
       // Help
       'main_features': 'Các tính năng chính',
@@ -210,6 +227,17 @@ class AppLocalizations {
       'open_link': 'Mở liên kết',
       'initializing_scanner': 'Đang khởi tạo máy quét...',
       'point_camera_at_qr_barcode': 'Hướng camera vào mã QR / Barcode',
+      'connect_wifi': 'Kết nối Wi-Fi',
+      'wifi_password': 'Mật khẩu: ',
+      'wifi_connected': 'Đã kết nối thành công!',
+      'wifi_connect_failed': 'Kết nối Wi-Fi thất bại',
+      'show_password': 'Hiện',
+      'hide_password': 'Ẩn',
+      'call': 'Gọi điện',
+      'send_sms': 'Gửi tin nhắn',
+      'send_email': 'Gửi Email',
+      'open_maps': 'Mở bản đồ',
+      'share_code': 'Chia sẻ',
     },
   };
 

@@ -5,14 +5,14 @@ import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/l10n/app_localizations.dart';
 
 class MobileScanOverlayScreen extends StatefulWidget {
-  final void Function(MobileScannerController controllerChild) toggleMode;
+  final MobileScannerController controller;
   final bool isAutoOpenLink;
-  final Future<void> Function(String) autoOpenLink;
-  final Future<void> Function(bool isUrl, String value) manualOpenLink;
+  final Future<void> Function(String value, {String? format}) autoOpenLink;
+  final Future<void> Function(bool isUrl, String value, {String? format}) manualOpenLink;
 
   const MobileScanOverlayScreen({
     super.key,
-    required this.toggleMode,
+    required this.controller,
     required this.isAutoOpenLink,
     required this.autoOpenLink,
     required this.manualOpenLink,
@@ -25,7 +25,6 @@ class MobileScanOverlayScreen extends StatefulWidget {
 
 class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
     with SingleTickerProviderStateMixin {
-  MobileScannerController controller = MobileScannerController();
   bool isScanned = false;
 
   late AnimationController _pulseController;
@@ -34,9 +33,6 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.toggleMode(controller);
-    });
 
     _pulseController = AnimationController(
       vsync: this,
@@ -67,9 +63,9 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
       setState(() => isScanned = true);
 
       if (isUrl && widget.isAutoOpenLink) {
-        await widget.autoOpenLink(value);
+        await widget.autoOpenLink(value, format: barcode?.format.name);
       } else {
-        await widget.manualOpenLink(isUrl, value);
+        await widget.manualOpenLink(isUrl, value, format: barcode?.format.name);
       }
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
@@ -103,7 +99,7 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
       fit: StackFit.expand,
       children: [
         MobileScanner(
-          controller: controller,
+          controller: widget.controller,
           scanWindow: scanWindow,
           fit: BoxFit.cover,
           onDetect: _handleDetect,
@@ -111,7 +107,7 @@ class _MobileScanOverlayScreenState extends State<MobileScanOverlayScreen>
 
         // Dark overlay with cut-out
         ValueListenableBuilder(
-          valueListenable: controller,
+          valueListenable: widget.controller,
           builder: (context, value, child) {
             if (!value.isInitialized ||
                 !value.isRunning ||

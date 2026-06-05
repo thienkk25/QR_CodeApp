@@ -28,7 +28,7 @@ class ScanQrScreen extends StatefulWidget {
 
 class _ScanQrScreenState extends State<ScanQrScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-  MobileScannerController? controller;
+  late final MobileScannerController controller;
   late bool isScanMode;
   bool isFlashOn = false;
   bool isScanned = false;
@@ -40,31 +40,17 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   static const double _minZoom = 1.0;
   static const double _maxZoom = 5.0;
   bool isLoading = true;
-
-  late AnimationController _fabAnimController;
+  bool _hasCameraPermission = false;
 
   @override
   void initState() {
     super.initState();
+    controller = MobileScannerController();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await checkScriptForWeb(context);
       await startSharedPreferences();
     });
-
-    _fabAnimController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-  }
-
-  void toggleMode(MobileScannerController controllerChild) async {
-    if (controller != controllerChild) {
-      setState(() {
-        controller = controllerChild;
-      });
-    }
-    _fabAnimController.forward(from: 0);
   }
 
   Future<void> startSharedPreferences() async {
@@ -81,6 +67,18 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     });
   }
 
+  Future<void> _safeStopController() async {
+    try {
+      await controller.stop();
+    } catch (_) {}
+  }
+
+  Future<void> _safeStartController() async {
+    try {
+      await controller.start();
+    } catch (_) {}
+  }
+
   Future<void> checkScriptForWeb(BuildContext context) async {
     if (kIsWeb) {
       const scriptUrl = 'https://unpkg.com/@zxing/library@latest';
@@ -94,62 +92,53 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     BuildContext context,
   ) async {
     final cameraStatus = await Permission.camera.status;
+    final granted = cameraStatus.isGranted || cameraStatus.isLimited;
 
-    if (!cameraStatus.isGranted && !cameraStatus.isLimited) {
-      if (cameraStatus.isPermanentlyDenied) {
-        openAppSettings();
-      } else if (cameraStatus.isRestricted) {
-        if (context.mounted) {
-          await showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: Text(context.l10n.get('cannot_access_camera')),
-              content: Text(
-                context.l10n.get('camera_restricted'),
-              ),
-            ),
-          );
-        }
-      } else {
-        await withCallbacks(Permission.camera).request();
+    setState(() {
+      _hasCameraPermission = granted;
+    });
+
+    if (!granted) {
+      if (!cameraStatus.isPermanentlyDenied) {
+        final status = await Permission.camera.request();
+        setState(() {
+          _hasCameraPermission = status.isGranted || status.isLimited;
+        });
       }
     }
 
     final photoStatus = await Permission.photos.status;
-
     if (!photoStatus.isGranted && !photoStatus.isLimited) {
       if (!photoStatus.isPermanentlyDenied && !photoStatus.isRestricted) {
-        await withCallbacks(Permission.photos).request();
+        await Permission.photos.request();
       }
     }
   }
 
-  Permission withCallbacks(Permission permission) {
-    return permission
-        .onGrantedCallback(() {})
-        .onDeniedCallback(() {})
-        .onPermanentlyDeniedCallback(() {
-          openAppSettings();
-        })
-        .onRestrictedCallback(() {})
-        .onLimitedCallback(() {});
-  }
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && isScanned) {
-      controller?.start();
-      setState(() => isScanned = false);
+    if (state == AppLifecycleState.resumed) {
+      _checkPermissionOnResume();
     }
     super.didChangeAppLifecycleState(state);
+  }
+
+  Future<void> _checkPermissionOnResume() async {
+    final status = await Permission.camera.status;
+    final granted = status.isGranted || status.isLimited;
+    setState(() {
+      _hasCameraPermission = granted;
+    });
+    if (granted && !isScanned) {
+      await _safeStartController();
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _fabAnimController.dispose();
     super.dispose();
-    controller?.dispose();
+    controller.dispose();
   }
 
   // ── Loading Screen ──────────────────────────────────────
@@ -197,9 +186,102 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     );
   }
 
-  // ── Settings drawer (slide-in from right) ───────────────
+  Widget _buildPermissionScreen() {
+    return Scaffold(
+      backgroundColor: context.colors.bgDeep,
+      extendBodyBehindAppBar: true,
+      appBar: _buildAppBar(),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  gradient: context.colors.accentGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.colors.accentPurple.withAlpha(80),
+                      blurRadius: 40,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: Colors.white,
+                  size: 42,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                context.l10n.get('camera_permission_required'),
+                style: AppTextStyles.titleLarge
+                    .copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                context.l10n.get('camera_permission_desc'),
+                style: AppTextStyles.bodyMedium
+                    .copyWith(color: context.colors.textSecondary),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 36),
+              GestureDetector(
+                onTap: () async {
+                  final status = await Permission.camera.request();
+                  if (status.isPermanentlyDenied) {
+                    await openAppSettings();
+                  } else {
+                    setState(() {
+                      _hasCameraPermission =
+                          status.isGranted || status.isLimited;
+                    });
+                    if (_hasCameraPermission) {
+                      await controller.start();
+                    }
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: context.colors.accentGradient,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: context.colors.accentPurple.withAlpha(65),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    context.l10n.get('grant_permission'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
   void _openSettings() {
-    controller?.stop();
+    _safeStopController();
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -246,7 +328,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                         setState(() => isAutoOpenLink = v);
                       },
                       onScanModeChanged: (v) async {
-                        controller?.stop();
+                        await _safeStopController();
                         final prefs = await SharedPreferences.getInstance();
                         await prefs.setBool('isScanMode', v);
                         setState(() => isScanMode = v);
@@ -255,13 +337,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                         Navigator.push(
                           context,
                           _slideRoute(const HistoryScannerScreen()),
-                        ).then((_) => controller?.start());
+                        ).then((_) => _safeStartController());
                       },
                       onHelpTap: () {
                         Navigator.push(
                           context,
                           _slideRoute(const HelpClientScreen()),
-                        ).then((_) => controller?.start());
+                        ).then((_) => _safeStartController());
                       },
                     ),
                   ),
@@ -279,7 +361,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 320),
-    ).then((_) => controller?.start());
+    ).then((_) => _safeStartController());
   }
 
   PageRoute _slideRoute(Widget page) {
@@ -299,6 +381,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   @override
   Widget build(BuildContext context) {
     if (isLoading) return _buildLoadingScreen();
+    if (!_hasCameraPermission) return _buildPermissionScreen();
 
     return Scaffold(
       backgroundColor: context.colors.bgDeep,
@@ -318,7 +401,11 @@ class _ScanQrScreenState extends State<ScanQrScreen>
           _zoomFactor = newZoom;
           // Normalize sang 0.0–1.0 mà setZoomScale yêu cầu
           final normalized = (newZoom - _minZoom) / (_maxZoom - _minZoom);
-          controller?.setZoomScale(normalized.clamp(0.0, 1.0));
+          try {
+            controller.setZoomScale(normalized.clamp(0.0, 1.0));
+          } catch (e) {
+            debugPrint('Set zoom scale failed: $e');
+          }
         },
         onScaleEnd: (_) {
           // Giữ nguyên mức zoom sau khi nhả tay
@@ -326,13 +413,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
         },
         child: isScanMode
             ? MobileScanOverlayScreen(
-                toggleMode: toggleMode,
+                controller: controller,
                 isAutoOpenLink: isAutoOpenLink,
                 autoOpenLink: autoOpenLink,
                 manualOpenLink: manualOpenLink,
               )
             : MobileScanNormalScreen(
-                toggleMode: toggleMode,
+                controller: controller,
                 isAutoOpenLink: isAutoOpenLink,
                 autoOpenLink: autoOpenLink,
                 manualOpenLink: manualOpenLink,
@@ -374,11 +461,11 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                       icon: Icons.add_box_outlined,
                       tooltip: context.l10n.get('create_code'),
                       onTap: () {
-                        controller?.stop();
+                        _safeStopController();
                         Navigator.push(
                           context,
                           _slideRoute(const CreateQrbarcodeScreen()),
-                        ).then((_) => controller?.start());
+                        ).then((_) => _safeStartController());
                       },
                     ),
                     const Spacer(),
@@ -450,9 +537,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                           ? context.colors.warning
                           : context.colors.textSecondary,
                       isActive: isFlashOn,
-                      onTap: () {
-                        controller?.toggleTorch();
-                        setSt(() => isFlashOn = !isFlashOn);
+                      onTap: () async {
+                        try {
+                          await controller.toggleTorch();
+                          setSt(() => isFlashOn = !isFlashOn);
+                        } catch (e) {
+                          debugPrint('Toggle torch failed: $e');
+                        }
                       },
                     );
                   },
@@ -471,7 +562,13 @@ class _ScanQrScreenState extends State<ScanQrScreen>
                   icon: Icons.cameraswitch_rounded,
                   label: context.l10n.get('switch_camera'),
                   color: context.colors.textSecondary,
-                  onTap: () => controller?.switchCamera(),
+                  onTap: () async {
+                    try {
+                      await controller.switchCamera();
+                    } catch (e) {
+                      debugPrint('Switch camera failed: $e');
+                    }
+                  },
                 ),
               ],
             ),
@@ -482,7 +579,7 @@ class _ScanQrScreenState extends State<ScanQrScreen>
   }
 
   Future<void> _pickFromGallery() async {
-    await controller?.stop();
+    await _safeStopController();
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -498,9 +595,9 @@ class _ScanQrScreenState extends State<ScanQrScreen>
             (uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https'));
         setState(() => isScanned = true);
         if (isUrl && isAutoOpenLink) {
-          await autoOpenLink(value);
+          await autoOpenLink(value, format: barcode?.format.name);
         } else {
-          manualOpenLink(isUrl, value);
+          manualOpenLink(isUrl, value, format: barcode?.format.name);
         }
       } else {
         if (!mounted) return;
@@ -521,11 +618,11 @@ class _ScanQrScreenState extends State<ScanQrScreen>
       }
       await controllerPhoto.dispose();
     }
-    await controller?.start();
+    await _safeStartController();
   }
 
-  Future<void> autoOpenLink(String value) async {
-    saveHistory(value);
+  Future<void> autoOpenLink(String value, {String? format}) async {
+    saveHistory(value, format: format);
     HapticFeedback.mediumImpact();
     final url = Uri.parse(value);
     if (await canLaunchUrl(url)) {
@@ -533,23 +630,26 @@ class _ScanQrScreenState extends State<ScanQrScreen>
     }
   }
 
-  Future<void> manualOpenLink(bool isUrl, String value) async {
-    saveHistory(value);
+  Future<void> manualOpenLink(bool isUrl, String value,
+      {String? format}) async {
+    saveHistory(value, format: format);
     HapticFeedback.mediumImpact();
     if (!mounted) return;
     await showScanResultSheet(
       context: context,
       value: value,
       isUrl: isUrl,
+      format: format,
       onClose: () => setState(() => isScanned = false),
     );
   }
 
-  void saveHistory(String value) {
+  void saveHistory(String value, {String? format}) {
     final box = Hive.box<ScanHistoryModel>('scan_history');
     final history = ScanHistoryModel(
       content: value,
       scannedAt: DateTime.now(),
+      format: format,
     );
     box.add(history);
   }

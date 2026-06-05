@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:qr_code_app/config/format_time.dart';
 import 'package:qr_code_app/models/scan_history_model.dart';
 import 'package:qr_code_app/theme/app_theme.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:qr_code_app/l10n/app_localizations.dart';
+import 'package:qr_code_app/widgets/custom_result_dialog.dart';
 
 class HistoryScannerScreen extends StatefulWidget {
   const HistoryScannerScreen({super.key});
@@ -16,6 +15,8 @@ class HistoryScannerScreen extends StatefulWidget {
 
 class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
   final box = Hive.box<ScanHistoryModel>('scan_history');
+  String _searchQuery = '';
+  String _selectedFilter = 'all'; // all, url, wifi, contact, text
 
   Future<void> _confirmClearAll() async {
     final confirmed = await showDialog<bool>(
@@ -36,14 +37,49 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         ],
       ),
     );
-    if (confirmed == true) box.clear();
+    if (confirmed == true) {
+      box.clear();
+      setState(() {});
+    }
   }
 
-  bool _isUrl(String value) {
-    final uri = Uri.tryParse(value);
-    return uri != null &&
-        uri.hasScheme &&
-        (uri.scheme == 'http' || uri.scheme == 'https');
+  List<MapEntry<int, ScanHistoryModel>> _getFilteredHistory() {
+    final List<MapEntry<int, ScanHistoryModel>> list = [];
+    for (int i = 0; i < box.length; i++) {
+      final item = box.getAt(i);
+      if (item != null) {
+        // Search filter
+        final cleanContent = item.content.toLowerCase();
+        if (_searchQuery.isNotEmpty && !cleanContent.contains(_searchQuery.toLowerCase())) {
+          continue;
+        }
+
+        // Tab category filter
+        if (_selectedFilter != 'all') {
+          final parsed = parseBarcodeContent(item.content);
+          if (_selectedFilter == 'url' && parsed.type != ParsedContentType.url) {
+            continue;
+          }
+          if (_selectedFilter == 'wifi' && parsed.type != ParsedContentType.wifi) {
+            continue;
+          }
+          if (_selectedFilter == 'contact' && parsed.type != ParsedContentType.contact) {
+            continue;
+          }
+          if (_selectedFilter == 'text' && 
+              parsed.type != ParsedContentType.text && 
+              parsed.type != ParsedContentType.phone && 
+              parsed.type != ParsedContentType.sms && 
+              parsed.type != ParsedContentType.email && 
+              parsed.type != ParsedContentType.geo) {
+            continue;
+          }
+        }
+
+        list.add(MapEntry(i, item));
+      }
+    }
+    return list.reversed.toList();
   }
 
   @override
@@ -57,22 +93,50 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
             return _buildEmptyState();
           }
 
+          final filteredItems = _getFilteredHistory();
+
           return CustomScrollView(
             slivers: [
               _buildSliverAppBar(),
-              SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = box.getAt(box.length - 1 - index)!;
-                      return _buildHistoryCard(context, item, index);
-                    },
-                    childCount: box.length,
+              _buildSearchBarAndFilters(),
+              if (filteredItems.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 48,
+                          color: context.colors.textMuted,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Không tìm thấy kết quả phù hợp',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: context.colors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final entry = filteredItems[index];
+                        // pass direct index for deletion mapping
+                        return _buildHistoryCard(context, entry.value, entry.key);
+                      },
+                      childCount: filteredItems.length,
+                    ),
                   ),
                 ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           );
         },
@@ -87,6 +151,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         title: Text(context.l10n.get('scan_history')),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
       ),
       body: Center(
         child: Column(
@@ -124,7 +189,7 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
       backgroundColor: context.colors.bgDeep,
       elevation: 0,
       pinned: true,
-      floating: true,
+      floating: false,
       centerTitle: true,
       title: Text(context.l10n.get('scan_history'), style: AppTextStyles.titleLarge),
       actions: [
@@ -171,23 +236,114 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
         ),
         const SizedBox(width: 8),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: context.colors.glassBorder),
+    );
+  }
+
+  Widget _buildSearchBarAndFilters() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+        child: Column(
+          children: [
+            // Search Input
+            Container(
+              decoration: BoxDecoration(
+                color: context.colors.bgCardSolid,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: context.colors.glassBorder),
+              ),
+              child: TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Tìm kiếm nội dung lịch sử...',
+                  hintStyle: TextStyle(color: context.colors.textMuted, fontSize: 13.5),
+                  prefixIcon: Icon(Icons.search_rounded, color: context.colors.textSecondary, size: 20),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear_rounded, color: context.colors.textSecondary, size: 18),
+                          onPressed: () {
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Filter Chips Row
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildFilterChip('all', 'Tất cả', Icons.all_inclusive_rounded),
+                  _buildFilterChip('url', 'Liên kết', Icons.link_rounded),
+                  _buildFilterChip('wifi', 'Wi-Fi', Icons.wifi_rounded),
+                  _buildFilterChip('contact', 'Liên hệ', Icons.contact_phone_rounded),
+                  _buildFilterChip('text', 'Văn bản', Icons.text_snippet_rounded),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHistoryCard(
-      BuildContext context, ScanHistoryModel item, int index) {
-    final isUrl = _isUrl(item.content);
+  Widget _buildFilterChip(String filter, String label, IconData icon) {
+    final isSelected = _selectedFilter == filter;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedFilter = filter),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? context.colors.accentPurple.withAlpha(25) : context.colors.bgCardSolid,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? context.colors.accentPurple : context.colors.glassBorder,
+              width: 1.2,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? context.colors.accentPurple : context.colors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? context.colors.accentPurple : context.colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(BuildContext context, ScanHistoryModel item, int originalIndex) {
+    final parsed = parseBarcodeContent(item.content);
+    final isUrl = parsed.type == ParsedContentType.url;
     final domain = isUrl ? Uri.tryParse(item.content)?.host ?? '' : '';
 
     return Dismissible(
-      key: Key('history_${box.length - 1 - index}_${item.scannedAt}'),
+      key: Key('history_${originalIndex}_${item.scannedAt}'),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: context.colors.error.withAlpha(25),
           borderRadius: BorderRadius.circular(16),
@@ -211,39 +367,45 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
           ],
         ),
       ),
-      onDismissed: (_) => box.deleteAt(box.length - 1 - index),
+      onDismissed: (_) {
+        box.deleteAt(originalIndex);
+        setState(() {});
+      },
       child: GestureDetector(
         onTap: () {
-          Clipboard.setData(ClipboardData(text: item.content));
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.get('copied'))),
+          showScanResultSheet(
+            context: context,
+            value: item.content,
+            isUrl: isUrl,
+            format: item.format,
+            onClose: () {},
           );
         },
         child: Container(
-          margin: const EdgeInsets.only(bottom: 10),
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             color: context.colors.bgCardSolid,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: context.colors.glassBorder),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header row: icon + label + action ──
+                // Header row
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Type icon
+                    // Icon
                     Container(
-                      width: 34,
-                      height: 34,
+                      width: 36,
+                      height: 36,
                       decoration: BoxDecoration(
                         color: isUrl
                             ? context.colors.accentPurple.withAlpha(25)
                             : context.colors.bgSurface,
-                        borderRadius: BorderRadius.circular(9),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isUrl
                               ? context.colors.accentPurple.withAlpha(55)
@@ -251,106 +413,91 @@ class _HistoryScannerScreenState extends State<HistoryScannerScreen> {
                         ),
                       ),
                       child: Icon(
-                        isUrl ? Icons.link_rounded : Icons.qr_code_rounded,
-                        size: 17,
-                        color: isUrl
-                            ? context.colors.accentPurple
-                            : context.colors.textSecondary,
+                        parsed.icon,
+                        size: 18,
+                        color: isUrl ? context.colors.accentPurple : context.colors.textSecondary,
                       ),
                     ),
                     const SizedBox(width: 10),
 
-                    // Domain / type label
+                    // Label / domain + format badge
                     Expanded(
-                      child: Text(
-                        isUrl && domain.isNotEmpty
-                            ? domain
-                            : (isUrl ? 'URL' : context.l10n.get('text')),
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: isUrl
-                              ? context.colors.accentPurple
-                              : context.colors.textMuted,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.3,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isUrl && domain.isNotEmpty
+                                ? domain
+                                : parsed.displayTitle,
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: isUrl ? context.colors.accentPurple : context.colors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: context.colors.accentPurple.withAlpha(18),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              (item.format ?? 'QR CODE').toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: context.colors.accentPurple,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
-                    // Open URL compact button
-                    if (isUrl)
-                      GestureDetector(
-                        onTap: () async {
-                          final url = Uri.parse(item.content);
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url,
-                                mode: LaunchMode.externalApplication);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: context.colors.accentBlue.withAlpha(20),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                                color: context.colors.accentBlue.withAlpha(55)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.open_in_new_rounded,
-                                  size: 12, color: context.colors.accentBlue),
-                              const SizedBox(width: 4),
-                              Text(
-                                  context.l10n.get('open'),
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: context.colors.accentBlue,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    // Copy hint (non-URL)
-                    if (!isUrl)
-                      Icon(Icons.copy_rounded,
-                          size: 14, color: context.colors.textMuted),
+                    // Navigation icon indicators
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 20,
+                      color: context.colors.textMuted,
+                    ),
                   ],
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // ── Content ──
+                // Content preview
                 Text(
                   item.content,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyLarge.copyWith(fontSize: 13),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: 13,
+                    color: context.colors.textSecondary,
+                  ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // ── Timestamp ──
+                // Timestamp
                 Row(
                   children: [
-                    Icon(Icons.access_time_rounded,
-                        size: 11, color: context.colors.textMuted),
+                    Icon(Icons.access_time_rounded, size: 12, color: context.colors.textMuted),
                     const SizedBox(width: 4),
                     Text(
-                      FormatTime()
-                          .coverTimeFromIso(item.scannedAt.toIso8601String()),
-                      style: AppTextStyles.labelSmall,
+                      FormatTime().coverTimeFromIso(item.scannedAt.toIso8601String()),
+                      style: AppTextStyles.labelSmall.copyWith(color: context.colors.textMuted),
                     ),
                     const Spacer(),
                     Text(
-                      context.l10n.get('tap_to_copy'),
-                      style: AppTextStyles.labelSmall
-                          .copyWith(color: context.colors.textMuted.withAlpha(130)),
+                      'Xem chi tiết',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: context.colors.accentPurple,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),

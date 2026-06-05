@@ -7,6 +7,12 @@ class ScanHistoryModel {
   final String content;
   @HiveField(1)
   final DateTime scannedAt;
+  @HiveField(2)
+  final String? format;
 
-  ScanHistoryModel({required this.content, required this.scannedAt});
+  ScanHistoryModel({
+    required this.content,
+    required this.scannedAt,
+    this.format,
+  });
 }

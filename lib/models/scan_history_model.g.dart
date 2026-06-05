@@ -19,17 +19,20 @@ class ScanHistoryModelAdapter extends TypeAdapter<ScanHistoryModel> {
     return ScanHistoryModel(
       content: fields[0] as String,
       scannedAt: fields[1] as DateTime,
+      format: fields[2] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ScanHistoryModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.content)
       ..writeByte(1)
-      ..write(obj.scannedAt);
+      ..write(obj.scannedAt)
+      ..writeByte(2)
+      ..write(obj.format);
   }
 
   @override

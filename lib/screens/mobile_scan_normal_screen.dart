@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class MobileScanNormalScreen extends StatefulWidget {
-  final void Function(MobileScannerController controllerChild) toggleMode;
+  final MobileScannerController controller;
   final bool isAutoOpenLink;
-  final Future<void> Function(String) autoOpenLink;
-  final Future<void> Function(bool isUrl, String value) manualOpenLink;
+  final Future<void> Function(String value, {String? format}) autoOpenLink;
+  final Future<void> Function(bool isUrl, String value, {String? format}) manualOpenLink;
   const MobileScanNormalScreen(
       {super.key,
-      required this.toggleMode,
+      required this.controller,
       required this.isAutoOpenLink,
       required this.autoOpenLink,
       required this.manualOpenLink});
@@ -18,14 +18,6 @@ class MobileScanNormalScreen extends StatefulWidget {
 }
 
 class _MobileScanNormalScreenState extends State<MobileScanNormalScreen> {
-  MobileScannerController controller = MobileScannerController();
-  @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.toggleMode(controller);
-    });
-    super.initState();
-  }
 
   bool isScanned = false;
 
@@ -42,9 +34,9 @@ class _MobileScanNormalScreenState extends State<MobileScanNormalScreen> {
       setState(() => isScanned = true);
 
       if (isUrl && widget.isAutoOpenLink) {
-        await widget.autoOpenLink(value);
+        await widget.autoOpenLink(value, format: barcode?.format.name);
       } else {
-        await widget.manualOpenLink(isUrl, value);
+        await widget.manualOpenLink(isUrl, value, format: barcode?.format.name);
       }
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
@@ -58,7 +50,7 @@ class _MobileScanNormalScreenState extends State<MobileScanNormalScreen> {
   Widget build(BuildContext context) {
     return MobileScanner(
       scanWindow: Rect.largest,
-      controller: controller,
+      controller: widget.controller,
       onDetect: _handleDetect,
     );
   }
